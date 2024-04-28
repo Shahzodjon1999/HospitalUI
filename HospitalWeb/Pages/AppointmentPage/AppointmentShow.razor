@@ -1,0 +1,51 @@
+﻿
+@using HospitalDTO.ResponseModel
+@inject HttpClient Http
+
+<h3>AppointmentShow</h3>
+
+<h4 style="color:blue;">
+    Wants to Add New Employee? Click on <a href="/employee/create">Add Employee</a>
+</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Doctor</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (appointment == null)
+        {
+            <tr>
+                <td colspan="8" align="center">No Data Found</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var appoint in appointment)
+            {
+                <tr>
+                    <td width="10%">@appoint.Id</td>
+                    <td width="10%">@appoint.AppointmentDate</td>
+                    <td width="15%">@appoint.Name</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@code {
+    private AppointmentResponse[]? appointment;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await this.FetEmployees();
+    }
+
+    private async Task FetEmployees()
+    {
+        appointment = await Http.GetFromJsonAsync<AppointmentResponse[]>("api/Appointment");
+    }
+}

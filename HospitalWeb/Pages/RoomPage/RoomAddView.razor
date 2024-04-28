@@ -1,0 +1,82 @@
+﻿@page "/addroom"
+<div class="row">
+    <div class="col-lg-4 offset-lg-4 pt-4 border">
+        <EditForm Model="@roomrequest" OnValidSubmit="Create" FormName="RoomForm">
+            <DataAnnotationsValidator />
+            <div class="mb-3 text-center flex-column">
+                <h3>Комната</h3>
+            </div>
+            <div class="mb-3">
+                <label>Имя</label>
+                <InputNumber @bind-Value="roomrequest.RoomNumber" class="form-control" />
+                <ValidationMessage For="() => roomrequest.RoomNumber" />
+            </div>
+            @if(floors != null)
+            {
+                @foreach (var country in floors)
+                {
+                    <div class="mb-2">
+                        <span class="form-label">Этаж</span>
+                        <input type="number" class="form-control" value="@country.Name" @oninput="(e) => UpdateCity(country, e)" />
+                    </div>
+                }
+            }
+            <div class="mb-3 d-grid gap-2">
+                <button type="submit" class="btn btn-outline-success">Сохранить</button>
+                <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+@code {
+    [Inject]
+    private CustomAuthenticationStateProvider? authenticationStateProvider { get; set; }
+
+    private string? authToken;
+    private RoomRequest roomrequest = new RoomRequest();
+
+    private IEnumerable<FloorResponse> floors;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                floors = await _httpClient.GetFromJsonAsync<List<FloorResponse>>("api/Floor");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    protected async Task Create()
+    {
+        try
+        {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                var response = await _httpClient.PostAsJsonAsync<RoomRequest>("api/Room", roomrequest);
+                if (response.IsSuccessStatusCode)
+                {
+                    await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "Ошибка");
+                }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    private void Back()
+    {
+        _navigationManager.NavigateTo("/room");
+    }
+    private void UpdateCity(FloorResponse country, ChangeEventArgs e)
+       => country.Name = e.Value?.ToString() ?? null;
+}

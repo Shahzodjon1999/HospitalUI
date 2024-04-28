@@ -1,0 +1,110 @@
+﻿@page "/floor"
+@using HospitalDTO.RequestModel
+@using HospitalDTO.ResponseModel
+@using HospitalDTO.UpdateRequestModel
+@using HospitalWeb.Authentication
+@using Newtonsoft.Json
+@using System.Net.Http.Headers
+@inject HttpClient httpClient
+
+@if (floors != null)
+{
+    <MudDataGrid T="FloorResponse" Items="@floors" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+                 StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
+                 Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
+        <Columns>
+            <TemplateColumn>
+                <HeaderTemplate>
+                    <MudText>Number</MudText>
+                </HeaderTemplate>
+                <CellTemplate Context="context">
+                    <MudText>@((floors.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.Name" />
+            <PropertyColumn Property="x => x.FloorNumber" />
+            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
+                <CellTemplate>
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="@(async () => await Delete(context.Item.Id))" />
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="FloorResponse" />
+        </PagerContent>
+    </MudDataGrid>
+    <div class="d-flex flex-wrap mt-4">
+        <MudSwitch @bind-Checked="@_readOnly" Color="Color.Primary">Read Only</MudSwitch>
+    </div>
+}
+
+@code {
+    [Inject]
+    private CustomAuthenticationStateProvider authenticationStateProvider { get; set; }
+
+    private string authToken;
+
+    private bool _readOnly;
+    private bool _isCellEditMode;
+    private List<string> _events = new();
+    private bool _editTriggerRowClick;
+
+    private FloorRequest floorRequest = new();
+
+    private IEnumerable<FloorResponse> floors;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                floors = await httpClient.GetFromJsonAsync<List<FloorResponse>>("api/Floor");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    protected async Task Create()
+    {
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        await httpClient.PostAsJsonAsync<FloorRequest>("api/Floor", floorRequest);
+        floors = await httpClient.GetFromJsonAsync<List<FloorResponse>>("api/Floor");
+    }
+
+    protected async Task Delete(Guid id)
+    {
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        await httpClient.DeleteAsync($"api/Floor?id={id}");
+        floors = await httpClient.GetFromJsonAsync<List<FloorResponse>>("api/Floor");
+    }
+
+    // events
+    void StartedEditingItem(FloorResponse item)
+    {
+        _events.Insert(0, $"Event = StartedEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    void CanceledEditingItem(FloorResponse item)
+    {
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+    void CommittedItemChanges(FloorResponse item)
+    {
+        var updateRequest = new FloorUpdateRequest
+            {
+                Id = item.Id,
+                FloorId=item.FloorNumber,
+                Name=item.Name,
+            };
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        httpClient.PutAsJsonAsync<FloorUpdateRequest>("api/Floor", updateRequest);
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+}

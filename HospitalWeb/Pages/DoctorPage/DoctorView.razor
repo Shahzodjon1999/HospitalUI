@@ -1,0 +1,120 @@
+﻿@page "/doctor"
+@using HospitalDTO.RequestModel
+@using HospitalDTO.ResponseModel
+@using HospitalDTO.UpdateRequestModel
+@using HospitalWeb.Authentication
+@using Newtonsoft.Json
+@using System.Net.Http.Headers
+@inject HttpClient httpClient
+
+@if (doctors != null)
+{
+    <MudDataGrid T="DoctorResponse" Items="@doctors" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+                 StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
+                 Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
+        <Columns>
+            <TemplateColumn>
+                <HeaderTemplate>
+                    <MudText>Number</MudText>
+                </HeaderTemplate>
+                <CellTemplate Context="context">
+                    <MudText>@((doctors.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.FirstName" />
+            <PropertyColumn Property="x => x.LastName" />
+            <PropertyColumn Property="x => x.Address" />
+            <PropertyColumn Property="x => x.PhoneNumber" />
+            <PropertyColumn Property="x => x.Positions" />
+            <PropertyColumn Property="x => x.DepartmentName" />
+            <PropertyColumn Property="x => x.DateOfBirth" />
+            <PropertyColumn Property="x => x.DateRegister" />
+            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
+                <CellTemplate>
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="@(async () => await Delete(context.Item.Id))" />
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="AppointmentResponse" />
+        </PagerContent>
+    </MudDataGrid>
+    <div class="d-flex flex-wrap mt-4">
+        <MudSwitch @bind-Checked="@_readOnly" Color="Color.Primary">Read Only</MudSwitch>
+    </div>
+}
+
+@code {
+    [Inject]
+    private CustomAuthenticationStateProvider authenticationStateProvider { get; set; }
+
+    private string authToken;
+
+    private bool _readOnly;
+    private bool _isCellEditMode;
+    private List<string> _events = new();
+    private bool _editTriggerRowClick;
+
+    private FloorRequest doctorRequest = new();
+
+    private IEnumerable<DoctorResponse> doctors;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                doctors = await httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Doctor");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    protected async Task Create()
+    {
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        await httpClient.PostAsJsonAsync<FloorRequest>("api/Doctor", doctorRequest);
+        doctors = await httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Doctor");
+    }
+
+    protected async Task Delete(Guid id)
+    {
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        await httpClient.DeleteAsync($"api/Doctor?id={id}");
+        doctors = await httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Doctor");
+    }
+
+    // events
+    void StartedEditingItem(DoctorResponse item)
+    {
+        _events.Insert(0, $"Event = StartedEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    void CanceledEditingItem(DoctorResponse item)
+    {
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+    void CommittedItemChanges(DoctorResponse item)
+    {
+        var updateRequest = new DoctorUpdateRequest
+            {
+                Id = item.Id,
+                FirstName=item.FirstName,
+                LastName=item.LastName,
+                Address=item.Address,
+                DateOfBirth=item.DateOfBirth,
+                PhoneNumber=item.PhoneNumber,
+                Positions=item.Positions,
+            };
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        httpClient.PutAsJsonAsync<DoctorUpdateRequest>("api/Doctor", updateRequest);
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+}

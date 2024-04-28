@@ -1,0 +1,142 @@
+﻿@page "/department"
+@using System.Net.Http.Json
+@using HospitalDTO.ResponseModel
+@using HospitalDTO.UpdateRequestModel
+@using HospitalWeb.Authentication
+@using MudBlazor
+@using System.Net.Http.Headers
+@inject HttpClient httpClient
+@inject ISnackbar Snackbar
+
+<MudTable Items="@Elements" ReadOnly="@ronly" CanCancelEdit="@canCancelEdit" Filter="new Func<DepartmentResponse,bool>(FilterFunc)"
+          @bind-SelectedItem="selectedItem1" SortLabel="Sort By" CommitEditTooltip="Commit Edit"
+          OnCommitEditClick="@(() => Snackbar.Add("Commit Edit Handler Invoked"))" RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
+          RowEditCommit="ItemHasBeenCommitted" IsEditRowSwitchingBlocked="@blockSwitch" ApplyButtonPosition="@applyButtonPosition" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Руйхати Департментхо</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<DepartmentResponse, object>(x=>x.Id)">Nr</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<DepartmentResponse, object>(x=>x.Name)">Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<DepartmentResponse, object>(x=>x.BranchName)">Номи Филял</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate Context="context">
+        <MudTd DataLabel="Nr">@((Elements.ToList().IndexOf(context) + 1).ToString())</MudTd>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="Номи Филял">@context.BranchName</MudTd>
+    </RowTemplate>
+    <RowEditingTemplate>
+        <MudTd DataLabel="Nr">@((Elements.ToList().IndexOf(context) + 1).ToString())</MudTd>
+        <MudTd DataLabel="Name">
+            <MudTextField @bind-Value="@context.Name" Required />
+        </MudTd>
+        <MudTd DataLabel="Номи Филял">
+            <MudTextField @bind-Value="@context.BranchName" Required />
+        </MudTd>
+       
+    </RowEditingTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+    <EditButtonContent Context="button">
+        <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" Disabled="@button.ButtonDisabled" />
+    </EditButtonContent>
+</MudTable>
+<div class="d-flex flex-wrap mt-4">
+    <MudSwitch @bind-Checked="@ronly" Color="Color.Tertiary">Read Only</MudSwitch>
+    <div class="d-flex justify-start align-center">
+        <p class="mud-typography mud-typography-body1 mud-inherit-text mr-2">Form</p>
+        <MudSwitch @bind-Checked="@canCancelEdit" Color="Color.Info">Can Cancel Edit</MudSwitch>
+    </div>
+</div>
+@code {
+    [Inject]
+    private CustomAuthenticationStateProvider authenticationStateProvider { get; set; }
+
+    private string authToken;
+
+    private List<string> editEvents = new();
+    private bool ronly = false;
+    private bool canCancelEdit = false;
+    private bool blockSwitch = false;
+    private string searchString = "";
+    private DepartmentResponse selectedItem1 = null;
+    private DepartmentResponse elementBeforeEdit;
+    private HashSet<DepartmentResponse> selectedItems1 = new HashSet<DepartmentResponse>();
+    private TableApplyButtonPosition applyButtonPosition = TableApplyButtonPosition.End;
+    private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
+    private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
+    private IEnumerable<DepartmentResponse> Elements = new List<DepartmentResponse>();
+
+    private HospitalUpdateRequest updateRequest;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                Elements = await httpClient.GetFromJsonAsync<List<DepartmentResponse>>("api/Department");
+            }
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    private void AddEditionEvent(string message)
+    {
+        editEvents.Add(message);
+        StateHasChanged();
+    }
+
+    private void BackupItem(object element)
+    {
+        elementBeforeEdit = new()
+            {
+                Id = ((DepartmentResponse)element).Id,
+                Name = ((DepartmentResponse)element).Name,
+                BranchName = ((DepartmentResponse)element).BranchName
+            };
+        AddEditionEvent($"Маьлум вакт маьлумотатон сабт шуда меистатд");
+    }
+
+    private void ItemHasBeenCommitted(object element)
+    {
+        // updateRequest = new DepartmentUpdateRequest
+        //     {
+        //         Id = ((DepartmentResponse)element).Id,
+        //         Name = ((DepartmentResponse)element).Name,
+        //         BranchId= //((DepartmentResponse)element).BranchName,
+        //     };
+        // var result = httpClient.PutAsJsonAsync<DepartmentUpdateRequest>("api/Branch", updateRequest);
+        AddEditionEvent($"Маьлумоти шумо Ислох карда шуд");
+    }
+
+    private void ResetItemToOriginalValues(object element)
+    {
+        ((DepartmentResponse)element).Id = elementBeforeEdit.Id;
+        ((DepartmentResponse)element).Name = elementBeforeEdit.Name;
+        ((DepartmentResponse)element).BranchName = elementBeforeEdit.BranchName;
+        AddEditionEvent($"Амалёт бекор карда шуд");
+    }
+
+    private bool FilterFunc(DepartmentResponse element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.BranchName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ($"{element.Id} {element.Name} {element.BranchName}".Contains(searchString))
+            return true;
+        return false;
+    }
+}

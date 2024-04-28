@@ -1,0 +1,61 @@
+﻿@page "/addhospital"
+<div class="row">
+    <div class="col-lg-4 offset-lg-4 pt-4 border">
+        <EditForm Model="@request" OnValidSubmit="Create" FormName="HopitalForm">
+            <DataAnnotationsValidator />
+            <div class="mb-3 text-center flex-column">
+                <h3>Регистрация</h3>
+            </div>
+            <div class="mb-3">
+                <label>Имя</label>
+                <InputText @bind-Value="request.Name" class="form-control" />
+                <ValidationMessage For="() => request.Name" />
+            </div>
+            <div class="mb-3">
+                <label>Адрес</label>
+                <InputText @bind-Value="request.Location" class="form-control" />
+                <ValidationMessage For="() => request.Location" />
+            </div>
+            <div class="mb-3 d-grid gap-2">
+                <button type="submit" class="btn btn-outline-success">Сохранить</button>
+                <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+@code {
+    [Inject]
+    private CustomAuthenticationStateProvider? authenticationStateProvider { get; set; }
+
+    private string? authToken;
+    private HospitalRequest request =new HospitalRequest();
+
+    protected async Task Create()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                var response = await _httpClient.PostAsJsonAsync<HospitalRequest>("api/Hospital", request);
+                if (response.IsSuccessStatusCode)
+                {
+                    await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "Ошибка");
+                }
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    private void Back()
+    {
+        _navigationManager.NavigateTo("/hospital");
+    }
+}

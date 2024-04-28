@@ -1,0 +1,101 @@
+﻿@page "/position"
+@using HospitalDTO.RequestModelUpdate
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить Должност</MudButton>
+<br />
+<br />
+@if (positions != null)
+{
+    <MudDataGrid T="PositionResponse" Items="@positions" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+                 StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
+                 Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
+        <Columns>
+            <TemplateColumn>
+                <HeaderTemplate>
+                    <MudText>Number</MudText>
+                </HeaderTemplate>
+                <CellTemplate Context="context">
+                    <MudText>@((positions.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.Name" />
+            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
+                <CellTemplate>
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="@(async () => await Delete(context.Item.Id))" />
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="PositionResponse" />
+        </PagerContent>
+    </MudDataGrid>
+    <div class="d-flex flex-wrap mt-4">
+        <MudSwitch @bind-Checked="@_readOnly" Color="Color.Primary">Read Only</MudSwitch>
+    </div>
+}
+
+@code {
+    [Inject]
+    private CustomAuthenticationStateProvider authenticationStateProvider { get; set; }
+
+    private string authToken;
+
+    private bool _readOnly;
+    private bool _isCellEditMode;
+    private List<string> _events = new();
+    private bool _editTriggerRowClick;
+
+    private PositionRequest positionRequest = new();
+
+    private IEnumerable<PositionResponse> positions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                positions = await _httpClient.GetFromJsonAsync<List<PositionResponse>>("api/Position");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    private void Create()
+    {
+        _navigationManager.NavigateTo("/addposition");
+    }
+
+    protected async Task Delete(Guid id)
+    {
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        await _httpClient.DeleteAsync($"api/Position?id={id}");
+        positions = await _httpClient.GetFromJsonAsync<List<PositionResponse>>("api/Position");
+    }
+
+    // events
+    void StartedEditingItem(PositionResponse item)
+    {
+        _events.Insert(0, $"Event = StartedEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    void CanceledEditingItem(PositionResponse item)
+    {
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+    void CommittedItemChanges(PositionResponse item)
+    {
+        var updateRequest = new PositionUpdateRequest
+            {
+               Id=item.Id,
+               Name=item.Name
+            };
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        _httpClient.PutAsJsonAsync<PositionUpdateRequest>("api/Position", updateRequest);
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+}

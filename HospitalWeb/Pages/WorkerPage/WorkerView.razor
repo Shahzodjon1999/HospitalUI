@@ -1,0 +1,109 @@
+﻿@page "/worker"
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить сотрудник</MudButton><br /><br />
+@if (floors != null)
+{
+    <MudDataGrid T="WorkerResponse" Items="@floors" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+                 StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
+                 Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
+        <Columns>
+            <TemplateColumn>
+                <HeaderTemplate>
+                    <MudText>Номер</MudText>
+                </HeaderTemplate>
+                <CellTemplate Context="context">
+                    <MudText>@((floors.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.FirstName" Title="Имя"/>
+            <PropertyColumn Property="x => x.LastName" Title="Фамилия" />
+            <PropertyColumn Property="x => x.Address" Title="Адресс" />
+            <PropertyColumn Property="x => x.PhoneNumber" Title="Номер телфон" />
+            <PropertyColumn Property="x => x.Maney" Title="Зарплата" />
+            <PropertyColumn Property="x => x.Role" Title="Должность" />
+            <PropertyColumn Property="x => x.DateOfBirth" Title="Дата рождения" />
+            <PropertyColumn Property="x => x.DateRegister" Title="Дата регистрации" />
+            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
+                <CellTemplate>
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="@(async () => await Delete(context.Item.Id))" />
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="WorkerResponse" />
+        </PagerContent>
+    </MudDataGrid>
+    <div class="d-flex flex-wrap mt-4">
+        <MudSwitch @bind-Checked="@_readOnly" Color="Color.Primary">Только чтение</MudSwitch>
+    </div>
+}
+
+@code {
+    [Inject]
+    private CustomAuthenticationStateProvider authenticationStateProvider { get; set; }
+
+    private string authToken;
+
+    private bool _readOnly;
+    private bool _isCellEditMode;
+    private List<string> _events = new();
+    private bool _editTriggerRowClick;
+
+    private WorkerRequest floorRequest = new();
+
+    private IEnumerable<WorkerResponse> floors;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                floors = await _httpClient.GetFromJsonAsync<List<WorkerResponse>>("api/Worker");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    private void Create()
+    {
+        _navigationManager.NavigateTo("/addworker");
+    }
+
+    protected async Task Delete(Guid id)
+    {
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        await _httpClient.DeleteAsync($"api/Worker?id={id}");
+        floors = await _httpClient.GetFromJsonAsync<List<WorkerResponse>>("api/Worker");
+    }
+
+    // events
+    void StartedEditingItem(WorkerResponse item)
+    {
+        _events.Insert(0, $"Event = StartedEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    void CanceledEditingItem(WorkerResponse item)
+    {
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+    void CommittedItemChanges(WorkerResponse item)
+    {
+        var updateRequest = new WorkerUpdateRequest
+            {
+                Id = item.Id,
+                FirstName = item.FirstName,
+                LastName = item.LastName,
+                Address = item.Address,
+                DateOfBirth = item.DateOfBirth,
+                PhoneNumber = item.PhoneNumber,
+            };
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        _httpClient.PutAsJsonAsync<WorkerUpdateRequest>("api/Worker", updateRequest);
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+}

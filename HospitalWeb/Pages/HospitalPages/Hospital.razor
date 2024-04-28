@@ -1,0 +1,142 @@
+﻿@page "/hospitalmud"
+
+<MudTable Items="@Elements" ReadOnly="@ronly" CanCancelEdit="@canCancelEdit" Filter="new Func<HospitalResponse,bool>(FilterFunc)"
+          @bind-SelectedItem="selectedItem1" SortLabel="Sort By" CommitEditTooltip="Commit Edit"
+          OnCommitEditClick="@(() => _snackbar.Add("Commit Edit Handler Invoked"))" RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
+          RowEditCommit="ItemHasBeenCommitted" IsEditRowSwitchingBlocked="@blockSwitch" ApplyButtonPosition="@applyButtonPosition" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Руйхати Болницахо</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<HospitalResponse, object>(x=>x.Id)">Nr</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<HospitalResponse, object>(x=>x.Name)">Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<HospitalResponse, object>(x=>x.Location)">Location</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate Context="context">
+        <MudTd DataLabel="Nr">@((Elements.ToList().IndexOf(context) + 1).ToString())</MudTd>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="Location">@context.Location</MudTd>
+    </RowTemplate>
+    <RowEditingTemplate>
+        <MudTd DataLabel="Nr">@((Elements.ToList().IndexOf(context) + 1).ToString())</MudTd>
+        <MudTd DataLabel="Name">
+            <MudTextField @bind-Value="@context.Name" Required />
+        </MudTd>
+        <MudTd DataLabel="Location">
+            <MudTextField @bind-Value="@context.Location" Required />
+        </MudTd>
+    </RowEditingTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+    <EditButtonContent Context="button">
+        <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" Disabled="@button.ButtonDisabled" />
+    </EditButtonContent>
+</MudTable>
+<div class="d-flex flex-wrap mt-4">
+<MudSwitch @bind-Checked="@ronly" Color="Color.Tertiary">Read Only</MudSwitch>
+    <div class="d-flex justify-start align-center">
+        <p class="mud-typography mud-typography-body1 mud-inherit-text mr-2">Form</p>
+<MudSwitch @bind-Checked="@canCancelEdit" Color="Color.Info">Can Cancel Edit</MudSwitch>
+    </div>
+</div>
+@code {
+    [Inject]
+    private CustomAuthenticationStateProvider authenticationStateProvider { get; set; }
+
+    private string authToken;
+
+    private List<string> editEvents = new();
+    private bool ronly = false;
+    private bool canCancelEdit = false;
+    private bool blockSwitch = false;
+    private string searchString = "";
+    private HospitalResponse selectedItem1 = null;
+    private HospitalResponse elementBeforeEdit;
+    private HashSet<HospitalResponse> selectedItems1 = new HashSet<HospitalResponse>();
+    private TableApplyButtonPosition applyButtonPosition = TableApplyButtonPosition.End;
+    private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
+    private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
+    private IEnumerable<HospitalResponse> Elements = new List<HospitalResponse>();
+
+    private HospitalUpdateRequest updateRequest;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                Elements = await _httpClient.GetFromJsonAsync<List<HospitalResponse>>("api/Hospital");
+            }
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    private void AddEditionEvent(string message)
+    {
+        editEvents.Add(message);
+        StateHasChanged();
+    }
+
+    private void BackupItem(object element)
+    {
+        elementBeforeEdit = new()
+            {
+                Id = ((HospitalResponse)element).Id,
+                Name = ((HospitalResponse)element).Name,
+                Location = ((HospitalResponse)element).Location
+            };
+        AddEditionEvent($"Маьлум вакт маьлумотатон сабт шуда меистатд");
+    }
+
+    private async void ItemHasBeenCommitted(object element)
+    {
+        updateRequest = new HospitalUpdateRequest
+         {
+            Id = ((HospitalResponse)element).Id,
+            Name = ((HospitalResponse)element).Name,
+            Location = ((HospitalResponse)element).Location
+        }; 
+        try
+        {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                var result = _httpClient.PutAsJsonAsync<HospitalUpdateRequest>("api/Hospital", updateRequest);
+                AddEditionEvent($"Маьлумоти шумо Ислох карда шуд");
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    private void ResetItemToOriginalValues(object element)
+    {
+        ((HospitalResponse)element).Id = elementBeforeEdit.Id;
+        ((HospitalResponse)element).Name = elementBeforeEdit.Name;
+        ((HospitalResponse)element).Location = elementBeforeEdit.Location;
+        AddEditionEvent($"Амалёт бекор карда шуд");
+    }
+
+    private bool FilterFunc(HospitalResponse element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Location.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ($"{element.Id} {element.Name} {element.Location}".Contains(searchString))
+            return true;
+        return false;
+    }
+}

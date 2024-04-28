@@ -1,0 +1,112 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">HospitalWeb</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+
+           <AuthorizeView Roles="Admin">
+            <Authorized>
+            <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="hospitalmud">
+                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Hospital
+                </NavLink>
+            </div>
+               </Authorized>
+        </AuthorizeView>
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="hospital">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Болница
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="branch">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Филялхо
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="department">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Департмент
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="floor">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Каватхо
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="room">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Хонахо
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="doctor">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Докторхо
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="worker">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Cотрудник
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="patient">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Беморхо
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="appointment">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Appointment
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="role">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Вазифахо
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="position">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Должност
+                    </NavLink>
+                </div>
+        </Authorized>
+        </AuthorizeView>
+    </nav>
+</div>
+ 
+@code {
+
+    bool _drawerOpen = true;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

@@ -1,0 +1,110 @@
+﻿@page "/room"
+@using HospitalDTO.RequestModel
+@using HospitalDTO.RequestModelUpdate
+@using HospitalDTO.ResponseModel
+@using HospitalDTO.UpdateRequestModel
+@using HospitalWeb.Authentication
+@using Newtonsoft.Json
+@using System.Net.Http.Headers
+@inject HttpClient httpClient
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить Комната</MudButton>
+<br />
+<br />
+@if (floors != null)
+{
+    <MudDataGrid T="RoomResponse" Items="@floors" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+                 StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
+                 Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
+        <Columns>
+            <TemplateColumn>
+                <HeaderTemplate>
+                    <MudText>Number</MudText>
+                </HeaderTemplate>
+                <CellTemplate Context="context">
+                    <MudText>@((floors.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.FloorNumber" />
+            <PropertyColumn Property="x => x.RoomNumber" />
+            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
+                <CellTemplate>
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="@(async () => await Delete(context.Item.Id))" />
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="RoomResponse" />
+        </PagerContent>
+    </MudDataGrid>
+    <div class="d-flex flex-wrap mt-4">
+        <MudSwitch @bind-Checked="@_readOnly" Color="Color.Primary">Read Only</MudSwitch>
+    </div>
+}
+
+@code {
+    [Inject]
+    private CustomAuthenticationStateProvider authenticationStateProvider { get; set; }
+
+    private string authToken;
+
+    private bool _readOnly;
+    private bool _isCellEditMode;
+    private List<string> _events = new();
+    private bool _editTriggerRowClick;
+
+    private RoomRequest floorRequest = new();
+
+    private IEnumerable<RoomResponse> floors;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                floors = await httpClient.GetFromJsonAsync<List<RoomResponse>>("api/Room");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    protected async Task Delete(Guid id)
+    {
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        await httpClient.DeleteAsync($"api/Room?id={id}");
+        floors = await httpClient.GetFromJsonAsync<List<RoomResponse>>("api/Room");
+    }
+
+    // events
+    void StartedEditingItem(RoomResponse item)
+    {
+        _events.Insert(0, $"Event = StartedEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    void CanceledEditingItem(RoomResponse item)
+    {
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+    void CommittedItemChanges(RoomResponse item)
+    {
+        var updateRequest = new RoomUpdateRequest
+            {
+                Id = item.Id,
+                RoomNumber=item.RoomNumber,
+                
+            };
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        httpClient.PutAsJsonAsync<RoomUpdateRequest>("api/Room", updateRequest);
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+    private void Create()
+    {
+        _navigationManager.NavigateTo("/addroom");
+    }
+}
