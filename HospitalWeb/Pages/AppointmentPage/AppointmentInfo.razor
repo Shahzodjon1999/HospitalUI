@@ -1,17 +1,7 @@
 ﻿@page "/appointment"
-@using HospitalDTO.RequestModel
-@using HospitalDTO.ResponseModel
-@using HospitalDTO.UpdateRequestModel
-@using HospitalWeb.Authentication
-@using Newtonsoft.Json
-@using System.Net.Http.Headers
-@inject HttpClient httpClient
-@* <EditForm Model="@appointmentRequest" OnValidSubmit="@Create">
-    <MudTextField @bind-Value="appointmentRequest.Name" Label="Name" />
-    <MudTextField @bind-Value="appointmentRequest.DoctorId" Label="Name" />
-    <MudTextField @bind-Value="appointmentRequest.AppointmentDate" Label="Location" />
-    <MudButton Color="Color.Primary" Style="align-content" Type="submit">Create</MudButton>
-</EditForm> *@
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Регистер встретиться</MudButton>
+<br />
+<br />
 @if (appointments != null)
 {
     <MudDataGrid T="AppointmentResponse" Items="@appointments" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
@@ -68,28 +58,26 @@
             authToken = await authenticationStateProvider.GetToken();
             if (authToken != null)
             {
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                appointments = await httpClient.GetFromJsonAsync<List<AppointmentResponse>>("api/Appointment");
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                appointments = await _httpClient.GetFromJsonAsync<List<AppointmentResponse>>("api/Appointment");
             }
         }
         catch (Exception)
         {
-            
+
             throw;
         }
     }
     protected async Task Create()
     {
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-        await httpClient.PostAsJsonAsync<AppointmentRequest>("api/Appointment", appointmentRequest);
-        appointments = await httpClient.GetFromJsonAsync<List<AppointmentResponse>>("api/Appointment");
+        _navigationManager.NavigateTo("/addappointment");
     }
 
     protected async Task Delete(Guid id)
     {
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-        await httpClient.DeleteAsync($"api/Appointment?id={id}");
-        appointments = await httpClient.GetFromJsonAsync<List<AppointmentResponse>>("api/Appointment");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        await _httpClient.DeleteAsync($"api/Appointment?id={id}");
+        appointments = await _httpClient.GetFromJsonAsync<List<AppointmentResponse>>("api/Appointment");
     }
 
     // events
@@ -112,8 +100,8 @@
                //DoctorId=item.DoctorName
             };
 
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-        httpClient.PutAsJsonAsync<AppointmentUpdateRequest>("api/Hospital", updateRequest);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        _httpClient.PutAsJsonAsync<AppointmentUpdateRequest>("api/Appointment", updateRequest);
         _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
     }
 }

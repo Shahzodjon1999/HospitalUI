@@ -1,5 +1,112 @@
-﻿<h3>PatientAddView</h3>
-
+﻿@page "/addpatient"
+@if(positions != null)
+{
+    <div class="row">
+        <div class="col-lg-4 offset-lg-4 pt-4 border">
+            <EditForm Model="@patientRequest" OnValidSubmit="Create" FormName="WorkerForm">
+                <DataAnnotationsValidator />
+                <div class="mb-3 text-center flex-column">
+                    <h3>Регистрация</h3>
+                </div>
+                <div class="mb-3">
+                    <label>Имя</label>
+                <InputText @bind-Value="patientRequest.FirstName" class="form-control" />
+                <ValidationMessage For="() => patientRequest.FirstName" />
+                </div>
+                <div class="mb-3">
+                    <label>Фамилия</label>
+                <InputText @bind-Value="patientRequest.LastName" class="form-control" />
+                <ValidationMessage For="() => patientRequest.LastName" />
+                </div>
+                <div class="mb-3">
+                    <label>Адресс</label>
+                <InputText @bind-Value="patientRequest.Address" class="form-control" />
+                <ValidationMessage For="() => patientRequest.Address" />
+                </div>
+                <div class="mb-3">
+                    <label>Номер телфон</label>
+                <InputText @bind-Value="patientRequest.PhoneNumber" class="form-control" />
+                <ValidationMessage For="() => patientRequest.PhoneNumber" />
+                </div>
+                <div class="mb-3">
+                    <label>Должност</label>
+                <select @bind="patientRequest.RoomId" class="form-control">
+                        @foreach (var pos in positions)
+                        {
+                            <option value="@pos.Id">@pos.RoomNumber</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label>Дата рождения</label>
+                <InputDate @bind-Value="patientRequest.DateOfBirth" class="form-control" ParsingErrorMessage="Must be a date" />
+                <ValidationMessage For="() => patientRequest.DateOfBirth" />
+                </div>
+                <div class="mb-3">
+                    <label>Дата регистрации</label>
+                <InputDate @bind-Value="patientRequest.DateRegister" class="form-control" ParsingErrorMessage="Must be a date" />
+                <ValidationMessage For="() => patientRequest.DateRegister" />
+                </div>
+                <div class="mb-3 d-grid gap-2">
+                    <button type="submit" class="btn btn-outline-success">Сохранить</button>
+                    <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
 @code {
+    [Inject]
+    private CustomAuthenticationStateProvider? authenticationStateProvider { get; set; }
 
+    private string? authToken;
+    private PatientRequest patientRequest = new PatientRequest();
+
+    private IEnumerable<RoomResponse>? positions;
+    private RoomResponse? selectOptions;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                positions = await _httpClient.GetFromJsonAsync<List<RoomResponse>>("api/Room");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    protected async Task Create()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                var response = await _httpClient.PostAsJsonAsync<PatientRequest>("api/Patient", patientRequest);
+                if (response.IsSuccessStatusCode)
+                {
+                    await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                    patientRequest = new PatientRequest();
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "Ошибка");
+                }
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    private void Back()
+    {
+        _navigationManager.NavigateTo("/patient");
+    }
 }

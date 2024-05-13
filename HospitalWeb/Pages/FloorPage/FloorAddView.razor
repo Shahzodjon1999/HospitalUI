@@ -1,5 +1,90 @@
-﻿<h3>FloorAddView</h3>
+﻿@page "/addfloor"
+@if (departments != null)
+{
+    <div class="row">
+        <div class="col-lg-4 offset-lg-4 pt-4 border">
+            <EditForm Model="@floorRequest" OnValidSubmit="Create" FormName="WorkerForm">
+                <DataAnnotationsValidator />
+                <div class="mb-3 text-center flex-column">
+                    <h3>Регистрация</h3>
+                </div>
+                <div class="mb-3">
+                    <label>Имя</label>
+                    <InputText @bind-Value="floorRequest.Name" class="form-control" />
+                    <ValidationMessage For="() => floorRequest.Name" />
+                </div>
+                <div class="mb-3">
+                    <label>Номер пол</label>
+                    <InputNumber @bind-Value="floorRequest.FloorNumber" class="form-control" />
+                    <ValidationMessage For="() => floorRequest.FloorNumber" />
+                </div>
+               
+                <div class="mb-3">
+                    <label>Отделение</label>
+                    <select @bind="floorRequest.DepartmentId" class="form-control">
+                        @foreach (var pos in departments)
+                        {
+                            <option value="@pos.Id">@pos.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3 d-grid gap-2">
+                    <button type="submit" class="btn btn-outline-success">Сохранить</button>
+                    <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
 
 @code {
+    [Inject]
+    private CustomAuthenticationStateProvider? authenticationStateProvider { get; set; }
 
+    private string? authToken;
+    private FloorRequest floorRequest = new FloorRequest();
+
+    private IEnumerable<DepartmentResponse>? departments;
+    private DepartmentResponse? selectOptions;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                departments = await _httpClient.GetFromJsonAsync<List<DepartmentResponse>>("api/Department");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    protected async Task Create()
+    {
+        try
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+            var response = await _httpClient.PostAsJsonAsync<FloorRequest>("api/Floor", floorRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                floorRequest = new FloorRequest();
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Ошибка");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    private void Back()
+    {
+        _navigationManager.NavigateTo("/floor");
+    }
 }

@@ -1,5 +1,89 @@
-﻿<h3>BranchAddView</h3>
+﻿@page "/addbranch"
+@if (hospitals != null)
+{
+    <div class="row">
+        <div class="col-lg-4 offset-lg-4 pt-4 border">
+            <EditForm Model="@branchRequest" OnValidSubmit="Create" FormName="WorkerForm">
+                <DataAnnotationsValidator />
+                <div class="mb-3 text-center flex-column">
+                    <h3>Регистрация</h3>
+                </div>
+                <div class="mb-3">
+                    <label>Имя</label>
+                    <InputText @bind-Value="branchRequest.Name" class="form-control" />
+                    <ValidationMessage For="() => branchRequest.Name" />
+                </div>
+                <div class="mb-3">
+                    <label>Адресс</label>
+                    <InputText @bind-Value="branchRequest.Location" class="form-control" />
+                    <ValidationMessage For="() => branchRequest.Location" />
+                </div>
+                <div class="mb-3">
+                    <label>Болница</label>
+                    <select @bind="branchRequest.HospitalID" class="form-control">
+                        @foreach (var pos in hospitals)
+                        {
+                            <option value="@pos.Id">@pos.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3 d-grid gap-2">
+                    <button type="submit" class="btn btn-outline-success">Сохранить</button>
+                    <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
 
 @code {
+    [Inject]
+    private CustomAuthenticationStateProvider? authenticationStateProvider { get; set; }
 
+    private string? authToken;
+    private BranchRequest branchRequest = new BranchRequest();
+
+    private IEnumerable<HospitalResponse>? hospitals;
+    private HospitalResponse? selectOptions;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                hospitals = await _httpClient.GetFromJsonAsync<List<HospitalResponse>>("api/Hospital");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    protected async Task Create()
+    {
+        try
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+            var response = await _httpClient.PostAsJsonAsync<BranchRequest>("api/Branch", branchRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                branchRequest = new BranchRequest();
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Ошибка");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    private void Back()
+    {
+        _navigationManager.NavigateTo("/branch");
+    }
 }

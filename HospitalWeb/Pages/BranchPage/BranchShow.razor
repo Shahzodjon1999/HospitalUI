@@ -7,7 +7,9 @@
 @using System.Net.Http.Headers
 @inject HttpClient httpClient
 @inject ISnackbar Snackbar
-
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить филялы</MudButton>
+<br />
+<br />
 <MudTable Items="@Elements" ReadOnly="@ronly" CanCancelEdit="@canCancelEdit" Filter="new Func<BranchResponse,bool>(FilterFunc)"
           @bind-SelectedItem="selectedItem1" SortLabel="Sort By" CommitEditTooltip="Commit Edit"
           OnCommitEditClick="@(() => Snackbar.Add("Commit Edit Handler Invoked"))" RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
@@ -91,6 +93,10 @@
             throw;
         }
     }
+    protected async Task Create()
+    {
+        _navigationManager.NavigateTo("/addbranch");
+    }
 
     private void AddEditionEvent(string message)
     {
@@ -119,7 +125,7 @@
             };
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
             var result = httpClient.PutAsJsonAsync<HospitalUpdateRequest>("api/Branch", updateRequest);
-            AddEditionEvent($"Маьлумоти шумо Ислох карда шуд");
+            AddEditionEvent($"Маьлумоти шумо Иваз карда шуд");
     }
 
     private void ResetItemToOriginalValues(object element)

@@ -1,5 +1,57 @@
-﻿<h3>RoleAddView</h3>
-
+﻿@page "/addrole"
+<div class="row">
+    <div class="col-lg-4 offset-lg-4 pt-4 border">
+        <EditForm Model="@roleRequest" OnValidSubmit="Create" FormName="PositionForm">
+            <DataAnnotationsValidator />
+            <div class="mb-3 text-center flex-column">
+                <h3>Должност</h3>
+            </div>
+            <div class="mb-3">
+                <label>Имя</label>
+                <InputText @bind-Value="roleRequest.Name" class="form-control" />
+                <ValidationMessage For="() => roleRequest.Name" />
+            </div>
+            <div class="mb-3 d-grid gap-2">
+                <button type="submit" class="btn btn-outline-success">Сохранить</button>
+                <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
 @code {
+    [Inject]
+    private CustomAuthenticationStateProvider? authenticationStateProvider { get; set; }
 
+    private string? authToken;
+    private RoleRequest roleRequest = new RoleRequest();
+
+    protected async Task Create()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                var response = await _httpClient.PostAsJsonAsync<RoleRequest>("api/Role", roleRequest);
+                if (response.IsSuccessStatusCode)
+                {
+                    await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                    roleRequest = new RoleRequest();
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "Ошибка");
+                }
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    private void Back()
+    {
+        _navigationManager.NavigateTo("/role");
+    }
 }

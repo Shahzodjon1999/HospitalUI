@@ -1,5 +1,114 @@
-﻿<h3>DoctorAddView</h3>
+﻿@page "/adddoctor"
+@if (positions != null)
+{
+    <div class="row">
+        <div class="col-lg-4 offset-lg-4 pt-4 border">
+            <EditForm Model="@doctorRequest" OnValidSubmit="Create" FormName="WorkerForm">
+                <DataAnnotationsValidator />
+                <div class="mb-3 text-center flex-column">
+                    <h3>Регистрация</h3>
+                </div>
+                <div class="mb-3">
+                    <label>Имя</label>
+                    <InputText @bind-Value="doctorRequest.FirstName" class="form-control" />
+                    <ValidationMessage For="() => doctorRequest.FirstName" />
+                </div>
+                <div class="mb-3">
+                    <label>Фамилия</label>
+                    <InputText @bind-Value="doctorRequest.LastName" class="form-control" />
+                    <ValidationMessage For="() => doctorRequest.LastName" />
+                </div>
+                <div class="mb-3">
+                    <label>Адресс</label>
+                    <InputText @bind-Value="doctorRequest.Address" class="form-control" />
+                    <ValidationMessage For="() => doctorRequest.Address" />
+                </div>
+                <div class="mb-3">
+                    <label>Номер телфон</label>
+                    <InputText @bind-Value="doctorRequest.PhoneNumber" class="form-control" />
+                    <ValidationMessage For="() => doctorRequest.PhoneNumber" />
+                </div>
+                <div class="mb-3">
+                    <label>Позиция</label>
+                    <InputText @bind-Value="doctorRequest.Positions" class="form-control" />
+                    <ValidationMessage For="() => doctorRequest.Positions" />
+                </div>
+                <div class="mb-3">
+                    <label>Отделение</label>
+                    <select @bind="doctorRequest.DepartmentId" class="form-control">
+                        @foreach (var pos in positions)
+                        {
+                            <option value="@pos.Id">@pos.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label>Дата рождения</label>
+                    <InputDate @bind-Value="doctorRequest.DateOfBirth" class="form-control" ParsingErrorMessage="Must be a date" />
+                    <ValidationMessage For="() => doctorRequest.DateOfBirth" />
+                </div>
+                <div class="mb-3">
+                    <label>Дата регистрации</label>
+                    <InputDate @bind-Value="doctorRequest.DateRegister" class="form-control" ParsingErrorMessage="Must be a date" />
+                    <ValidationMessage For="() => doctorRequest.DateRegister" />
+                </div>
+                <div class="mb-3 d-grid gap-2">
+                    <button type="submit" class="btn btn-outline-success">Сохранить</button>
+                    <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
 
 @code {
+    [Inject]
+    private CustomAuthenticationStateProvider? authenticationStateProvider { get; set; }
 
+    private string? authToken;
+    private DoctorRequest doctorRequest = new DoctorRequest();
+
+    private IEnumerable<DepartmentResponse>? positions;
+    private DepartmentResponse? selectOptions;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                positions = await _httpClient.GetFromJsonAsync<List<DepartmentResponse>>("api/Department");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    protected async Task Create()
+    {
+        try
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+            var response = await _httpClient.PostAsJsonAsync<DoctorRequest>("api/Doctor", doctorRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                doctorRequest = new DoctorRequest();
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Ошибка");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    private void Back()
+    {
+        _navigationManager.NavigateTo("/doctor");
+    }
 }

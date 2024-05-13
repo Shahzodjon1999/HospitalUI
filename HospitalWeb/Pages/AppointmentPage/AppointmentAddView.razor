@@ -1,5 +1,89 @@
-﻿<h3>AppointmentAddView</h3>
-
+﻿@page "/addappointment"
+<div class="row">
+    <div class="col-lg-4 offset-lg-4 pt-4 border">
+        <EditForm Model="@appointmentRequest" OnValidSubmit="Create" FormName="PositionForm">
+            <DataAnnotationsValidator />
+            <div class="mb-3 text-center flex-column">
+                <h3>Должност</h3>
+            </div>
+            <div class="mb-3">
+                <label>Имя</label>
+                <InputText @bind-Value="appointmentRequest.Name" class="form-control" />
+                <ValidationMessage For="() => appointmentRequest.Name" />
+            </div>
+            <div class="mb-3">
+                <label>Доктор</label>
+                <select @bind="appointmentRequest.DoctorId" class="form-control">
+                    @foreach (var pos in positions)
+                    {
+                        <option value="@pos.Id">@pos.FirstName @pos.LastName</option>
+                    }
+                </select>
+            </div>
+            <div class="mb-3">
+                <label>Дата регистрации</label>
+                <InputDate @bind-Value="appointmentRequest.AppointmentDate" class="form-control" ParsingErrorMessage="Must be a date" />
+                <ValidationMessage For="() => appointmentRequest.AppointmentDate" />
+            </div>
+            <div class="mb-3 d-grid gap-2">
+                <button type="submit" class="btn btn-outline-success">Сохранить</button>
+                <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
 @code {
+    [Inject]
+    private CustomAuthenticationStateProvider? authenticationStateProvider { get; set; }
 
+    private string? authToken;
+    private AppointmentRequest appointmentRequest = new AppointmentRequest();
+
+    private IEnumerable<DoctorResponse>? positions;
+    private DoctorResponse? selectOptions;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                positions = await _httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Position");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    protected async Task Create()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                var response = await _httpClient.PostAsJsonAsync<AppointmentRequest>("api/Appointment", appointmentRequest);
+                if (response.IsSuccessStatusCode)
+                {
+                    await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                    appointmentRequest = new AppointmentRequest();
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "Ошибка");
+                }
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    private void Back()
+    {
+        _navigationManager.NavigateTo("/appointment");
+    }
 }

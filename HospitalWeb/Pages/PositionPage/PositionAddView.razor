@@ -37,6 +37,7 @@
                 if (response.IsSuccessStatusCode)
                 {
                     await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                    positionRequest = new PositionRequest();
                 }
                 else
                 {

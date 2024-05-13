@@ -57,12 +57,13 @@
     {
         try
         {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                var response = await _httpClient.PostAsJsonAsync<RoomRequest>("api/Room", roomrequest);
-                if (response.IsSuccessStatusCode)
-                {
-                    await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
-                }
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+            var response = await _httpClient.PostAsJsonAsync<RoomRequest>("api/Room", roomrequest);
+            if (response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                roomrequest = new();
+            }
                 else
                 {
                     await _js.InvokeVoidAsync("alert", "Ошибка");

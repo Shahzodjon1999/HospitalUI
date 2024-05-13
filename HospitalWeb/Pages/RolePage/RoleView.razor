@@ -73,9 +73,7 @@
     }
     protected async Task Create()
     {
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-        await httpClient.PostAsJsonAsync<RoleRequest>("api/Role", floorRequest);
-        floors = await httpClient.GetFromJsonAsync<List<RoleResponse>>("api/Role");
+        _navigationManager.NavigateTo("/addrole");
     }
 
     protected async Task Delete(Guid id)

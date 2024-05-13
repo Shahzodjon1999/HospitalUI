@@ -1,61 +1,65 @@
 ﻿@page "/addworker"
-<div class="row">
-    <div class="col-lg-4 offset-lg-4 pt-4 border">
-        <EditForm Model="@workerRequest" OnValidSubmit="Create" FormName="WorkerForm">
-            <DataAnnotationsValidator />
-            <div class="mb-3 text-center flex-column">
-                <h3>Регистрация</h3>
-            </div>
-            <div class="mb-3">
-                <label>Имя</label>
-                <InputText @bind-Value="workerRequest.FirstName" class="form-control" />
-                <ValidationMessage For="() => workerRequest.FirstName" />
-            </div>
-            <div class="mb-3">
-                <label>Фамилия</label>
-                <InputText @bind-Value="workerRequest.LastName" class="form-control" />
-                <ValidationMessage For="() => workerRequest.LastName" />
-            </div>
-            <div class="mb-3">
-                <label>Адресс</label>
-                <InputText @bind-Value="workerRequest.Address" class="form-control" />
-                <ValidationMessage For="() => workerRequest.Address" />
-            </div>
-            <div class="mb-3">
-                <label>Номер телфон</label>
-                <InputText @bind-Value="workerRequest.PhoneNumber" class="form-control" />
-                <ValidationMessage For="() => workerRequest.PhoneNumber" />
-            </div>
-            <select @bind="positions">
-                @if (positions != null)
-                {
-                    @foreach (var pos in positions)
-                    {
-                        <option value="@pos">@pos.Name</option>
-                    }
-                }
-            </select>
-            <div class="mb-3">
-                <label>Дата рождения</label>
-                <InputDate @bind-Value="workerRequest.DateOfBirth" class="form-control" ParsingErrorMessage="Must be a date" />
-                <ValidationMessage For="() => workerRequest.DateOfBirth" />
-            </div>
-            <div class="mb-3">
-                <label>Дата регистрации</label>
-                <InputDate @bind-Value="workerRequest.DateRegister" class="form-control" ParsingErrorMessage="Must be a date" />
-                <ValidationMessage For="() => workerRequest.DateRegister" />
-            </div>
-            <div class="mb-3 d-grid gap-2">
-                <button type="submit" class="btn btn-outline-success">Сохранить</button>
-                <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
-            </div>
-         @*    <div class="d-flex justify-content-between">
-                <button type="submit" class="btn btn-primary">Сохранить</button>
-                <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+@if (positions!=null)
+{
+    <div class="row">
+        <div class="col-lg-4 offset-lg-4 pt-4 border">
+            <EditForm Model="@workerRequest" OnValidSubmit="Create" FormName="WorkerForm">
+                <DataAnnotationsValidator />
+                <div class="mb-3 text-center flex-column">
+                    <h3>Регистрация</h3>
+                </div>
+                <div class="mb-3">
+                    <label>Имя</label>
+                    <InputText @bind-Value="workerRequest.FirstName" class="form-control" />
+                    <ValidationMessage For="() => workerRequest.FirstName" />
+                </div>
+                <div class="mb-3">
+                    <label>Фамилия</label>
+                    <InputText @bind-Value="workerRequest.LastName" class="form-control" />
+                    <ValidationMessage For="() => workerRequest.LastName" />
+                </div>
+                <div class="mb-3">
+                    <label>Адресс</label>
+                    <InputText @bind-Value="workerRequest.Address" class="form-control" />
+                    <ValidationMessage For="() => workerRequest.Address" />
+                </div>
+                <div class="mb-3">
+                    <label>Номер телфон</label>
+                    <InputText @bind-Value="workerRequest.PhoneNumber" class="form-control" />
+                    <ValidationMessage For="() => workerRequest.PhoneNumber" />
+                </div>
+                <div class="mb-3">
+                    <label>Должност</label>
+                    <select @bind="workerRequest.PositionId"  class="form-control">
+                        @foreach (var pos in positions)
+                        {
+                            <option value="@pos.Id">@pos.Name</option>
+                        }
+                    </select>
+                    </div>
+                <div class="mb-3">
+                    <label>Дата рождения</label>
+                    <InputDate @bind-Value="workerRequest.DateOfBirth" class="form-control" ParsingErrorMessage="Must be a date" />
+                    <ValidationMessage For="() => workerRequest.DateOfBirth" />
+                </div>
+                <div class="mb-3">
+                    <label>Дата регистрации</label>
+                    <InputDate @bind-Value="workerRequest.DateRegister" class="form-control" ParsingErrorMessage="Must be a date" />
+                    <ValidationMessage For="() => workerRequest.DateRegister" />
+                </div>
+                <div class="mb-3 d-grid gap-2">
+                    <button type="submit" class="btn btn-outline-success">Сохранить</button>
+                    <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+                </div>
+                @*    <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
             </div> *@
-        </EditForm>
+            </EditForm>
+        </div>
     </div>
-</div>
+}
+
 @code {
     [Inject]
     private CustomAuthenticationStateProvider? authenticationStateProvider { get; set; }
@@ -63,8 +67,8 @@
     private string? authToken;
     private WorkerRequest workerRequest =new WorkerRequest();
 
-    private IEnumerable<PositionResponse> positions;
-
+    private IEnumerable<PositionResponse>? positions;
+    private PositionResponse? selectOptions;
     protected override async Task OnInitializedAsync()
     {
         try
@@ -81,17 +85,16 @@
             throw;
         }
     }
-
     protected async Task Create()
     {
         try
         {
-            //workerRequest.PositionId=
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
             var response = await _httpClient.PostAsJsonAsync<WorkerRequest>("api/Worker", workerRequest);
             if (response.IsSuccessStatusCode)
             {
                 await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                workerRequest = new WorkerRequest();
             }
             else
             {

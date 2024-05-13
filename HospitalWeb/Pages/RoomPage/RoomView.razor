@@ -1,12 +1,4 @@
 ﻿@page "/room"
-@using HospitalDTO.RequestModel
-@using HospitalDTO.RequestModelUpdate
-@using HospitalDTO.ResponseModel
-@using HospitalDTO.UpdateRequestModel
-@using HospitalWeb.Authentication
-@using Newtonsoft.Json
-@using System.Net.Http.Headers
-@inject HttpClient httpClient
 <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить Комната</MudButton>
 <br />
 <br />
@@ -64,8 +56,8 @@
             authToken = await authenticationStateProvider.GetToken();
             if (authToken != null)
             {
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                floors = await httpClient.GetFromJsonAsync<List<RoomResponse>>("api/Room");
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                floors = await _httpClient.GetFromJsonAsync<List<RoomResponse>>("api/Room");
             }
         }
         catch (Exception)
@@ -76,9 +68,9 @@
 
     protected async Task Delete(Guid id)
     {
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-        await httpClient.DeleteAsync($"api/Room?id={id}");
-        floors = await httpClient.GetFromJsonAsync<List<RoomResponse>>("api/Room");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        await _httpClient.DeleteAsync($"api/Room?id={id}");
+        floors = await _httpClient.GetFromJsonAsync<List<RoomResponse>>("api/Room");
     }
 
     // events
@@ -99,8 +91,8 @@
                 RoomNumber=item.RoomNumber,
                 
             };
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-        httpClient.PutAsJsonAsync<RoomUpdateRequest>("api/Room", updateRequest);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        _httpClient.PutAsJsonAsync<RoomUpdateRequest>("api/Room", updateRequest);
         _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
     }
     private void Create()

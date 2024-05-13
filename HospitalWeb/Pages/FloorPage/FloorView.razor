@@ -1,12 +1,7 @@
 ﻿@page "/floor"
-@using HospitalDTO.RequestModel
-@using HospitalDTO.ResponseModel
-@using HospitalDTO.UpdateRequestModel
-@using HospitalWeb.Authentication
-@using Newtonsoft.Json
-@using System.Net.Http.Headers
-@inject HttpClient httpClient
-
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Регистер встретиться</MudButton>
+<br />
+<br />
 @if (floors != null)
 {
     <MudDataGrid T="FloorResponse" Items="@floors" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
@@ -61,8 +56,8 @@
             authToken = await authenticationStateProvider.GetToken();
             if (authToken != null)
             {
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                floors = await httpClient.GetFromJsonAsync<List<FloorResponse>>("api/Floor");
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                floors = await _httpClient.GetFromJsonAsync<List<FloorResponse>>("api/Floor");
             }
         }
         catch (Exception)
@@ -72,16 +67,14 @@
     }
     protected async Task Create()
     {
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-        await httpClient.PostAsJsonAsync<FloorRequest>("api/Floor", floorRequest);
-        floors = await httpClient.GetFromJsonAsync<List<FloorResponse>>("api/Floor");
+        _navigationManager.NavigateTo("/addfloor");
     }
 
     protected async Task Delete(Guid id)
     {
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-        await httpClient.DeleteAsync($"api/Floor?id={id}");
-        floors = await httpClient.GetFromJsonAsync<List<FloorResponse>>("api/Floor");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        await _httpClient.DeleteAsync($"api/Floor?id={id}");
+        floors = await _httpClient.GetFromJsonAsync<List<FloorResponse>>("api/Floor");
     }
 
     // events
@@ -103,8 +96,8 @@
                 Name=item.Name,
             };
 
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-        httpClient.PutAsJsonAsync<FloorUpdateRequest>("api/Floor", updateRequest);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        _httpClient.PutAsJsonAsync<FloorUpdateRequest>("api/Floor", updateRequest);
         _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
     }
 }

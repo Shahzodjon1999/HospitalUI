@@ -1,16 +1,10 @@
 ﻿@page "/department"
-@using System.Net.Http.Json
-@using HospitalDTO.ResponseModel
-@using HospitalDTO.UpdateRequestModel
-@using HospitalWeb.Authentication
-@using MudBlazor
-@using System.Net.Http.Headers
-@inject HttpClient httpClient
-@inject ISnackbar Snackbar
-
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Регистер встретиться</MudButton>
+<br />
+<br />
 <MudTable Items="@Elements" ReadOnly="@ronly" CanCancelEdit="@canCancelEdit" Filter="new Func<DepartmentResponse,bool>(FilterFunc)"
           @bind-SelectedItem="selectedItem1" SortLabel="Sort By" CommitEditTooltip="Commit Edit"
-          OnCommitEditClick="@(() => Snackbar.Add("Commit Edit Handler Invoked"))" RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
+          OnCommitEditClick="@(() => _snackbar.Add("Commit Edit Handler Invoked"))" RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
           RowEditCommit="ItemHasBeenCommitted" IsEditRowSwitchingBlocked="@blockSwitch" ApplyButtonPosition="@applyButtonPosition" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Руйхати Департментхо</MudText>
@@ -79,8 +73,8 @@
             authToken = await authenticationStateProvider.GetToken();
             if (authToken != null)
             {
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                Elements = await httpClient.GetFromJsonAsync<List<DepartmentResponse>>("api/Department");
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                Elements = await _httpClient.GetFromJsonAsync<List<DepartmentResponse>>("api/Department");
             }
         }
         catch (Exception)
@@ -89,7 +83,10 @@
             throw;
         }
     }
-
+    protected async Task Create()
+    {
+        _navigationManager.NavigateTo("/adddepartment");
+    }
     private void AddEditionEvent(string message)
     {
         editEvents.Add(message);

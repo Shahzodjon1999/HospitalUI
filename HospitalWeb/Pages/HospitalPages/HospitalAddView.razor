@@ -42,6 +42,7 @@
                 if (response.IsSuccessStatusCode)
                 {
                     await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                    request = new();
                 }
                 else
                 {

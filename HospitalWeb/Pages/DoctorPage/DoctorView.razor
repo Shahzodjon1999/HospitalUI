@@ -1,12 +1,7 @@
 ﻿@page "/doctor"
-@using HospitalDTO.RequestModel
-@using HospitalDTO.ResponseModel
-@using HospitalDTO.UpdateRequestModel
-@using HospitalWeb.Authentication
-@using Newtonsoft.Json
-@using System.Net.Http.Headers
-@inject HttpClient httpClient
-
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Регистер встретиться</MudButton>
+<br />
+<br />
 @if (doctors != null)
 {
     <MudDataGrid T="DoctorResponse" Items="@doctors" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
@@ -67,8 +62,8 @@
             authToken = await authenticationStateProvider.GetToken();
             if (authToken != null)
             {
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                doctors = await httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Doctor");
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                doctors = await _httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Doctor");
             }
         }
         catch (Exception)
@@ -78,16 +73,14 @@
     }
     protected async Task Create()
     {
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-        await httpClient.PostAsJsonAsync<FloorRequest>("api/Doctor", doctorRequest);
-        doctors = await httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Doctor");
+        _navigationManager.NavigateTo("/adddoctor");
     }
 
     protected async Task Delete(Guid id)
     {
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-        await httpClient.DeleteAsync($"api/Doctor?id={id}");
-        doctors = await httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Doctor");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        await _httpClient.DeleteAsync($"api/Doctor?id={id}");
+        doctors = await _httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Doctor");
     }
 
     // events
@@ -113,8 +106,8 @@
                 Positions=item.Positions,
             };
 
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-        httpClient.PutAsJsonAsync<DoctorUpdateRequest>("api/Doctor", updateRequest);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        _httpClient.PutAsJsonAsync<DoctorUpdateRequest>("api/Doctor", updateRequest);
         _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
     }
 }
