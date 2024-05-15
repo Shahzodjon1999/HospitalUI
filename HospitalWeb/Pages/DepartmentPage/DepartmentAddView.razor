@@ -9,16 +9,16 @@
                     <h3>Регистрация</h3>
                 </div>
                 <div class="mb-3">
-                    <label>Имя</label>
+                    <label>Название</label>
                     <InputText @bind-Value="departmentRequest.Name" class="form-control" />
                     <ValidationMessage For="() => departmentRequest.Name" />
                 </div>
                 <div class="mb-3">
-                    <label>Филиалы</label>
+                    <label>Адресс Филиалы</label>
                     <select @bind="departmentRequest.BranchID" class="form-control">
                         @foreach (var pos in branchs)
                         {
-                            <option value="@pos.Id">@pos.Name</option>
+                            <option value="@pos.Id">@pos.Name, @pos.Location</option>
                         }
                     </select>
                 </div>
@@ -48,7 +48,7 @@
             if (authToken != null)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                branchs = await _httpClient.GetFromJsonAsync<List<BranchResponse>>("api/Position");
+                branchs = await _httpClient.GetFromJsonAsync<List<BranchResponse>>("api/Branch");
             }
         }
         catch (Exception)

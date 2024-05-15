@@ -18,5 +18,4 @@ public record DoctorResponse : EntityBaseResponse
 
     public string Positions { get; set; } = string.Empty;
 
-    public string DepartmentName { get; set; } = string.Empty;
 }

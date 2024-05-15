@@ -4,10 +4,10 @@
         <EditForm Model="@roleRequest" OnValidSubmit="Create" FormName="PositionForm">
             <DataAnnotationsValidator />
             <div class="mb-3 text-center flex-column">
-                <h3>Должност</h3>
+                <h3>Роль</h3>
             </div>
             <div class="mb-3">
-                <label>Имя</label>
+                <label>Название</label>
                 <InputText @bind-Value="roleRequest.Name" class="form-control" />
                 <ValidationMessage For="() => roleRequest.Name" />
             </div>

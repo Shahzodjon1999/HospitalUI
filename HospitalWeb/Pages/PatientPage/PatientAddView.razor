@@ -1,9 +1,10 @@
 ﻿@page "/addpatient"
+@using HospitalDTO.Enums
 @if(positions != null)
 {
     <div class="row">
         <div class="col-lg-4 offset-lg-4 pt-4 border">
-            <EditForm Model="@patientRequest" OnValidSubmit="Create" FormName="WorkerForm">
+            <EditForm Model="@patientRequest" OnValidSubmit="Create" FormName="PatienForm">
                 <DataAnnotationsValidator />
                 <div class="mb-3 text-center flex-column">
                     <h3>Регистрация</h3>
@@ -29,7 +30,25 @@
                 <ValidationMessage For="() => patientRequest.PhoneNumber" />
                 </div>
                 <div class="mb-3">
-                    <label>Должност</label>
+                    <label>Cостояние</label>
+                    <MudSelect T="PatientStatus" Label="Patient Status" @bind-Value="patientStatus">
+                        @foreach (var status in Enum.GetValues(typeof(PatientStatus)).Cast<PatientStatus>())
+                        {
+                            <MudSelectItem T="PatientStatus" Value="status">@status</MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+               @*  <div class="mb-3">
+                    <label>Cостояние</label>
+                    <InputText @bind-Value="patientRequest.State" class="form-control" />
+                </div> *@
+                <div class="mb-3">
+                    <label>Пациенты</label>
+                <InputText @bind-Value="patientRequest.Disease" class="form-control" />
+                <ValidationMessage For="() => patientRequest.Disease" />
+                </div>
+                <div class="mb-3">
+                    <label>Комнаты</label>
                 <select @bind="patientRequest.RoomId" class="form-control">
                         @foreach (var pos in positions)
                         {
@@ -64,6 +83,9 @@
 
     private IEnumerable<RoomResponse>? positions;
     private RoomResponse? selectOptions;
+
+    private PatientStatus patientStatus { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -84,21 +106,18 @@
     {
         try
         {
-            authToken = await authenticationStateProvider.GetToken();
-            if (authToken != null)
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+            var response = await _httpClient.PostAsJsonAsync<PatientRequest>("api/Patient", patientRequest);
+            if (response.IsSuccessStatusCode)
             {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                var response = await _httpClient.PostAsJsonAsync<PatientRequest>("api/Patient", patientRequest);
-                if (response.IsSuccessStatusCode)
-                {
-                    await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
-                    patientRequest = new PatientRequest();
-                }
-                else
-                {
-                    await _js.InvokeVoidAsync("alert", "Ошибка");
-                }
+                await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                patientRequest = new PatientRequest();
             }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Ошибка");
+            }
+            
         }
         catch (Exception)
         {

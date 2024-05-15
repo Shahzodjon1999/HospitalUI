@@ -1,5 +1,5 @@
 ﻿@page "/floor"
-<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Регистер встретиться</MudButton>
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить</MudButton>
 <br />
 <br />
 @if (floors != null)
@@ -10,14 +10,14 @@
         <Columns>
             <TemplateColumn>
                 <HeaderTemplate>
-                    <MudText>Number</MudText>
+                    <MudText>Номер</MudText>
                 </HeaderTemplate>
                 <CellTemplate Context="context">
                     <MudText>@((floors.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Property="x => x.Name" />
-            <PropertyColumn Property="x => x.FloorNumber" />
+            <PropertyColumn Property="x => x.Name" Title="Название" />
+            <PropertyColumn Property="x => x.FloorNumber" Title="Номер этаж" />
             <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
                 <CellTemplate>
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />

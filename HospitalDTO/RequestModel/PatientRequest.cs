@@ -1,27 +1,26 @@
 ﻿using HospitalDTO.Entity;
 using HospitalDTO.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace HospitalDTO.RequestModel;
 
 public record PatientRequest : EntityBaseRequest
 {
-	public string FirstName { get; set; } = string.Empty;
-
-	public string LastName { get; set; } = string.Empty;
-
-	public string PhoneNumber { get; set; } = string.Empty;
-
-    public List<Guid>? DoctorIds { get; set; }
-
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Please provide Имя")]
+    public string FirstName { get; set; } = string.Empty;
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Please provide Фамилия")]
+    public string LastName { get; set; } = string.Empty;
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Please provide Номер телфон")]
+    public string PhoneNumber { get; set; } = string.Empty;
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Please provide Адресс")]
     public string Address { get; set; } = string.Empty;
-
-	public DateTime DateOfBirth { get; set; }
-
-	public DateTime DateRegister { get; set; }
-
-	public string Disease { get; set; } = string.Empty;
-
-	public PatientStatus State { get; set; }
-
-	public Guid RoomId { get; set; }
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Please provide Дата рождения")]
+    public DateTime? DateOfBirth { get; set; }
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Please provide Дата регистрации")]
+    public DateTime? DateRegister { get; set; }
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Please provide Пациенты")]
+    public string Disease { get; set; } = string.Empty;
+    public PatientStatus State { get; set; } = PatientStatus.Male;
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Please provide Комнату")]
+    public Guid RoomId { get; set; }
 }

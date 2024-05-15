@@ -1,13 +1,8 @@
 ﻿@page "/role"
-@using HospitalDTO.RequestModel
-@using HospitalDTO.RequestModelUpdate
-@using HospitalDTO.ResponseModel
-@using HospitalDTO.UpdateRequestModel
-@using HospitalWeb.Authentication
-@using Newtonsoft.Json
-@using System.Net.Http.Headers
-@inject HttpClient httpClient
-
+@using HospitalDTO.RequestModelUpdate 
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить</MudButton>
+<br />
+<br />
 @if (floors != null)
 {
     <MudDataGrid T="RoleResponse" Items="@floors" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
@@ -62,8 +57,8 @@
             authToken = await authenticationStateProvider.GetToken();
             if (authToken != null)
             {
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                floors = await httpClient.GetFromJsonAsync<List<RoleResponse>>("api/Role");
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                floors = await _httpClient.GetFromJsonAsync<List<RoleResponse>>("api/Role");
             }
         }
         catch (Exception)
@@ -78,9 +73,9 @@
 
     protected async Task Delete(Guid id)
     {
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-        await httpClient.DeleteAsync($"api/Role?id={id}");
-        floors = await httpClient.GetFromJsonAsync<List<RoleResponse>>("api/Role");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        await _httpClient.DeleteAsync($"api/Role?id={id}");
+        floors = await _httpClient.GetFromJsonAsync<List<RoleResponse>>("api/Role");
     }
 
     // events
@@ -102,8 +97,8 @@
                 Status=item.Status
             };
 
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-        httpClient.PutAsJsonAsync<RoleUpdateRequest>("api/Role", updateRequest);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        _httpClient.PutAsJsonAsync<RoleUpdateRequest>("api/Role", updateRequest);
         _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
     }
 }

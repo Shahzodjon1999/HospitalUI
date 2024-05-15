@@ -9,7 +9,7 @@
                     <h3>Регистрация</h3>
                 </div>
                 <div class="mb-3">
-                    <label>Имя</label>
+                    <label>Название</label>
                     <InputText @bind-Value="branchRequest.Name" class="form-control" />
                     <ValidationMessage For="() => branchRequest.Name" />
                 </div>
@@ -19,7 +19,7 @@
                     <ValidationMessage For="() => branchRequest.Location" />
                 </div>
                 <div class="mb-3">
-                    <label>Болница</label>
+                    <label>Больницы</label>
                     <select @bind="branchRequest.HospitalID" class="form-control">
                         @foreach (var pos in hospitals)
                         {

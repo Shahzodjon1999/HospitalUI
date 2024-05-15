@@ -1,5 +1,5 @@
 ﻿@page "/doctor"
-<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Регистер встретиться</MudButton>
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить</MudButton>
 <br />
 <br />
 @if (doctors != null)
@@ -10,20 +10,19 @@
         <Columns>
             <TemplateColumn>
                 <HeaderTemplate>
-                    <MudText>Number</MudText>
+                    <MudText>Номер</MudText>
                 </HeaderTemplate>
                 <CellTemplate Context="context">
                     <MudText>@((doctors.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Property="x => x.FirstName" />
-            <PropertyColumn Property="x => x.LastName" />
-            <PropertyColumn Property="x => x.Address" />
-            <PropertyColumn Property="x => x.PhoneNumber" />
-            <PropertyColumn Property="x => x.Positions" />
-            <PropertyColumn Property="x => x.DepartmentName" />
-            <PropertyColumn Property="x => x.DateOfBirth" />
-            <PropertyColumn Property="x => x.DateRegister" />
+            <PropertyColumn Property="x => x.FirstName" Title="Имя"/>
+            <PropertyColumn Property="x => x.LastName" Title="Фамилия" />
+            <PropertyColumn Property="x => x.Address" Title="Адресс" />
+            <PropertyColumn Property="x => x.PhoneNumber" Title="Номер тел"/>
+            <PropertyColumn Property="x => x.Positions" Title="Позиция" />
+            <PropertyColumn Property="x => x.DateOfBirth" Title="Дата рождения" />
+            <PropertyColumn Property="x => x.DateRegister" Title="Дата регистрации" />
             <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
                 <CellTemplate>
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />

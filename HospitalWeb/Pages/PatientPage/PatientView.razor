@@ -1,5 +1,5 @@
 ﻿@page "/patient"
-<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Регистер встретиться</MudButton>
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить</MudButton>
 <br />
 <br />
 @if (patients != null)
@@ -10,7 +10,7 @@
         <Columns>
             <TemplateColumn>
                 <HeaderTemplate>
-                    <MudText>Number</MudText>
+                    <MudText>Номер</MudText>
                 </HeaderTemplate>
                 <CellTemplate Context="context">
                     <MudText>@((patients.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
@@ -21,7 +21,6 @@
             <PropertyColumn Property="x => x.Address" />
             <PropertyColumn Property="x => x.PhoneNumber" />
             <PropertyColumn Property="x => x.Disease" />
-            <PropertyColumn Property="x => x.RoomNumber" />
             <PropertyColumn Property="x => x.State" />
             <PropertyColumn Property="x => x.DateOfBirth" />
             <PropertyColumn Property="x => x.DateRegister" />

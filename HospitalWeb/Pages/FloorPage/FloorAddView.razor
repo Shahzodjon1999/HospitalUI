@@ -1,40 +1,39 @@
 ﻿@page "/addfloor"
 @if (departments != null)
 {
-    <div class="row">
-        <div class="col-lg-4 offset-lg-4 pt-4 border">
-            <EditForm Model="@floorRequest" OnValidSubmit="Create" FormName="WorkerForm">
-                <DataAnnotationsValidator />
-                <div class="mb-3 text-center flex-column">
-                    <h3>Регистрация</h3>
-                </div>
-                <div class="mb-3">
-                    <label>Имя</label>
-                    <InputText @bind-Value="floorRequest.Name" class="form-control" />
-                    <ValidationMessage For="() => floorRequest.Name" />
-                </div>
-                <div class="mb-3">
-                    <label>Номер пол</label>
-                    <InputNumber @bind-Value="floorRequest.FloorNumber" class="form-control" />
-                    <ValidationMessage For="() => floorRequest.FloorNumber" />
-                </div>
-               
-                <div class="mb-3">
-                    <label>Отделение</label>
-                    <select @bind="floorRequest.DepartmentId" class="form-control">
-                        @foreach (var pos in departments)
-                        {
-                            <option value="@pos.Id">@pos.Name</option>
-                        }
-                    </select>
-                </div>
-                <div class="mb-3 d-grid gap-2">
-                    <button type="submit" class="btn btn-outline-success">Сохранить</button>
-                    <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
-                </div>
-            </EditForm>
-        </div>
+<div class="row">
+    <div class="col-lg-4 offset-lg-4 pt-4 border">
+        <EditForm Model="@floorRequest" OnValidSubmit="Create" FormName="WorkerForm">
+            <DataAnnotationsValidator />
+            <div class="mb-3 text-center flex-column">
+                <h3>Регистрация</h3>
+            </div>
+            <div class="mb-3">
+                <label>Название</label>
+                <InputText @bind-Value="floorRequest.Name" class="form-control" />
+                <ValidationMessage For="() => floorRequest.Name" />
+            </div>
+            <div class="mb-3">
+                <label>Номер этаж</label>
+                <InputNumber @bind-Value="floorRequest.FloorNumber" class="form-control" />
+                <ValidationMessage For="() => floorRequest.FloorNumber" />
+            </div>
+            <div class="mb-3">
+                <label>Отделение</label>
+                <select @bind="floorRequest.DepartmentId" class="form-control">
+                    @foreach (var pos in departments)
+                    {
+                        <option value="@pos.Id">@pos.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="mb-3 d-grid gap-2">
+                <button type="submit" class="btn btn-outline-success">Сохранить</button>
+                <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+            </div>
+        </EditForm>
     </div>
+</div>
 }
 
 @code {

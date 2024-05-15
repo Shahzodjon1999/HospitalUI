@@ -19,7 +19,6 @@ public record PatientResponse : EntityBaseResponse
 
     public string Disease { get; set; } = string.Empty;
 
-    public int? RoomNumber { get; set; }
     public PatientStatus State { get; set; }
 }
 

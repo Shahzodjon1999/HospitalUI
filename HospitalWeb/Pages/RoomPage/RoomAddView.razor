@@ -7,20 +7,19 @@
                 <h3>Комната</h3>
             </div>
             <div class="mb-3">
-                <label>Имя</label>
+                <label>Номер комната</label>
                 <InputNumber @bind-Value="roomrequest.RoomNumber" class="form-control" />
                 <ValidationMessage For="() => roomrequest.RoomNumber" />
             </div>
-            @if(floors != null)
-            {
-                @foreach (var country in floors)
-                {
-                    <div class="mb-2">
-                        <span class="form-label">Этаж</span>
-                        <input type="number" class="form-control" value="@country.Name" @oninput="(e) => UpdateCity(country, e)" />
-                    </div>
-                }
-            }
+            <div class="mb-3">
+                <label>Выбрать этаж</label>
+                <select @bind="roomrequest.FloorId" class="form-control">
+                    @foreach (var pos in floors)
+                    {
+                        <option value="@pos.Id">@pos.Name, @pos.FloorNumber</option>
+                    }
+                </select>
+            </div>
             <div class="mb-3 d-grid gap-2">
                 <button type="submit" class="btn btn-outline-success">Сохранить</button>
                 <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
