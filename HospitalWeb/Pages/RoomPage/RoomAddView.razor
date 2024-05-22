@@ -1,32 +1,35 @@
 ﻿@page "/addroom"
-<div class="row">
-    <div class="col-lg-4 offset-lg-4 pt-4 border">
-        <EditForm Model="@roomrequest" OnValidSubmit="Create" FormName="RoomForm">
-            <DataAnnotationsValidator />
-            <div class="mb-3 text-center flex-column">
-                <h3>Комната</h3>
-            </div>
-            <div class="mb-3">
-                <label>Номер комната</label>
-                <InputNumber @bind-Value="roomrequest.RoomNumber" class="form-control" />
-                <ValidationMessage For="() => roomrequest.RoomNumber" />
-            </div>
-            <div class="mb-3">
-                <label>Выбрать этаж</label>
-                <select @bind="roomrequest.FloorId" class="form-control">
-                    @foreach (var pos in floors)
-                    {
-                        <option value="@pos.Id">@pos.Name, @pos.FloorNumber</option>
-                    }
-                </select>
-            </div>
-            <div class="mb-3 d-grid gap-2">
-                <button type="submit" class="btn btn-outline-success">Сохранить</button>
-                <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
-            </div>
-        </EditForm>
+@if (floors!=null)
+{
+    <div class="row">
+        <div class="col-lg-4 offset-lg-4 pt-4 border">
+            <EditForm Model="@roomrequest" OnValidSubmit="Create" FormName="RoomForm">
+                <DataAnnotationsValidator />
+                <div class="mb-3 text-center flex-column">
+                    <h3>Комната</h3>
+                </div>
+                <div class="mb-3">
+                    <label>Номер комната</label>
+                    <InputNumber @bind-Value="roomrequest.RoomNumber" class="form-control" />
+                    <ValidationMessage For="() => roomrequest.RoomNumber" />
+                </div>
+                <div class="mb-3">
+                    <label>Выбрать этаж</label>
+                    <select @bind="roomrequest.FloorId" class="form-control">
+                        @foreach (var pos in floors)
+                        {
+                            <option value="@pos.Id">@pos.Name, @pos.FloorNumber</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3 d-grid gap-2">
+                    <button type="submit" class="btn btn-outline-success">Сохранить</button>
+                    <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+                </div>
+            </EditForm>
+        </div>
     </div>
-</div>
+}
 @code {
     [Inject]
     private CustomAuthenticationStateProvider? authenticationStateProvider { get; set; }

@@ -39,12 +39,12 @@
                     </div>
                 <div class="mb-3">
                     <label>Дата рождения</label>
-                    <InputDate @bind-Value="workerRequest.DateOfBirth" class="form-control" ParsingErrorMessage="Must be a date" />
+                    <input type="datetime-local" @bind="workerRequest.DateOfBirth" class="form-control" />
                     <ValidationMessage For="() => workerRequest.DateOfBirth" />
                 </div>
                 <div class="mb-3">
                     <label>Дата регистрации</label>
-                    <InputDate @bind-Value="workerRequest.DateRegister" class="form-control" ParsingErrorMessage="Must be a date" />
+                    <input type="datetime-local" @bind="workerRequest.DateRegister" class="form-control" />
                     <ValidationMessage For="() => workerRequest.DateRegister" />
                 </div>
                 <div class="mb-3 d-grid gap-2">

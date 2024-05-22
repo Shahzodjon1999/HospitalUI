@@ -10,14 +10,17 @@
         <Columns>
             <TemplateColumn>
                 <HeaderTemplate>
-                    <MudText>Number</MudText>
+                    <MudText>Номер</MudText>
                 </HeaderTemplate>
                 <CellTemplate Context="context">
                     <MudText>@((appointments.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Property="x => x.Name" />
-            <PropertyColumn Property="x => x.AppointmentDate" />
+            <PropertyColumn Property="x => x.Name" Title="Имя" />
+            <PropertyColumn Property="x => x.lastName" Title="Фамилия" />
+            <PropertyColumn Property="x => x.Email" Title="Email" />
+            <PropertyColumn Property="x => x.PhoneNumber" Title="Номер тел" />
+            <PropertyColumn Property="x => x.AppointmentDate" Title="Дате" />
             <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
                 <CellTemplate>
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
@@ -96,7 +99,9 @@
                 Id = item.Id,
                 Name=item.Name,
                 AppointmentDate=item.AppointmentDate,
-               //DoctorId=item.DoctorName
+                Email=item.Email,
+                PhoneNumber=item.PhoneNumber,
+                lastName=item.Name,
             };
 
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);

@@ -1,11 +1,6 @@
 ﻿@page "/login"
-@using System.Net
 @using HospitalDTO.Auth
-@using HospitalWeb.Authentication
-@inject HttpClient _httpClient
-@inject IJSRuntime js
-@inject AuthenticationStateProvider authStateProvider
-@inject NavigationManager navigationManager
+@using System.Net
 <div class="row">
     <div class="col-lg-4 offset-lg-4 pt-4 border">
         <EditForm Model="@auth"  OnValidSubmit="Authenticate" FormName="LoginForm">
@@ -28,6 +23,7 @@
             </div>
             <div class="mb-3 d-grid gap-2">
                 <button type="submit" class="btn btn-primary">Вход</button>
+                <p @onclick="Create" class="btn btn-primary">Регистратсия</p>
             </div>
         </EditForm>
     </div>
@@ -43,24 +39,29 @@
         try
         {
             var loginResponse = await _httpClient.PostAsJsonAsync<AuthGetTokenRequest>("api/Auth/LogIn", auth);
-           
+
             if (loginResponse.IsSuccessStatusCode)
             {
                 var userSession = await loginResponse.Content.ReadFromJsonAsync<AuthSessionToken>();
-                var customStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
+                var customStateProvider = (CustomAuthenticationStateProvider)_authStateProvider;
                 await customStateProvider.UpdateAuthenticationState(userSession);
-                navigationManager.NavigateTo("/", true);
+                _navigationManager.NavigateTo("/", true);
             }
             else if (loginResponse.StatusCode == HttpStatusCode.Unauthorized)
             {
                 errorMessage = "Неправильное имя пользователя или пароль";
-                await js.InvokeVoidAsync("alert", "Неправильное имя пользователя или пароль");
+                await _js.InvokeVoidAsync("alert", "Неправильное имя пользователя или пароль");
                 return;
             }
         }
         catch (Exception ex)
         {
-            await js.InvokeVoidAsync("alert", "API сервера не работает!!!");
+            await _js.InvokeVoidAsync("alert", "API сервера не работает!!!");
         }
+    }
+
+    private void Create()
+    {
+        _navigationManager.NavigateTo("/register");
     }
 }

@@ -1,0 +1,84 @@
+﻿@page "/sign_up"
+<h3>SignUp</h3>
+@if (workerlist!=null)
+{
+    <div class="row">
+        <div class="col-lg-4 offset-lg-4 pt-4 border">
+            <EditForm Model="@authrequest" OnValidSubmit="Create" FormName="PositionForm">
+                <DataAnnotationsValidator />
+                <div class="mb-3 text-center flex-column">
+                    <h3>Встреча</h3>
+                </div>
+                <div class="mb-3">
+                    <label>Имя</label>
+                    <InputText @bind-Value="authrequest.Login" class="form-control" />
+                    <ValidationMessage For="() => authrequest.Login" />
+                </div>
+                <div class="mb-3">
+                    <label>Фамилия</label>
+                    <InputText @bind-Value="authrequest.Password" class="form-control" />
+                    <ValidationMessage For="() => authrequest.Password" />
+                </div>
+                <div class="mb-3">
+                    <label>Email</label>
+                    <InputSelect @bind-Value="authrequest.IsBlocked" class="form-control" />
+                    <ValidationMessage For="() => authrequest.IsBlocked" />
+                </div>
+                <div class="mb-3">
+                    <label>Сотрудник</label>
+                    <select @bind="authrequest.WorkerId" class="form-control">
+                        @foreach (var pos in workerlist)
+                        {
+                            <option value="@pos.Id">@pos.FirstName @pos.LastName</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3 d-grid gap-2">
+                    <button type="submit" class="btn btn-outline-success">Сохранить</button>
+                    <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+@code {
+    private AuthRequest authrequest = new AuthRequest();
+
+    private IEnumerable<WorkerResponse>? workerlist;
+    private WorkerResponse? selectOptions;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            workerlist = await _httpClient.GetFromJsonAsync<List<WorkerResponse>>("api/Worker");
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    protected async Task Create()
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync<AuthRequest>("api/Auth", authrequest);
+            if (response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                authrequest = new AuthRequest();
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Ошибка");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    private void Back()
+    {
+        _navigationManager.NavigateTo("/login");
+    }
+}

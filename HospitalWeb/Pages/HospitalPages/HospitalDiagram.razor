@@ -1,0 +1,241 @@
+﻿@page "/hospitaldiagram"
+
+@* @using Blazorise.Charts
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить</MudButton>
+<br />
+<br />
+@if (Hospitals != null)
+{
+        <MudDataGrid T="HospitalResponse" Items="@Hospitals" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+                     StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
+                     Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
+            <Columns>
+                <TemplateColumn>
+                    <HeaderTemplate>
+                        <MudText>Номер</MudText>
+                    </HeaderTemplate>
+                    <CellTemplate Context="context">
+                        <MudText>@((Hospitals.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn Property="x => x.Name" Title="Название" />
+                <PropertyColumn Property="x => x.Location" Title="Адресс" />
+                <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
+                    <CellTemplate>
+                        <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                        <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="@(async () => await Delete(context.Item.Id))" />
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="HospitalResponse" />
+            </PagerContent>
+        </MudDataGrid>
+        <div class="d-flex flex-wrap mt-4">
+            <MudSwitch @bind-Checked="@_readOnly" Color="Color.Primary">Read Only</MudSwitch>
+        </div>
+    
+    <LineChart Data="@chartData" Labels="@chartLabels" />
+
+    <!-- End of existing code -->
+}
+
+@code {
+    // Your existing code
+    [Inject]
+    private CustomAuthenticationStateProvider authenticationStateProvider { get; set; }
+
+    private string authToken;
+    private IEnumerable<HospitalResponse> Hospitals; // Assuming HospitalResponse is your model class for hospitals
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                Hospitals = await _httpClient.GetFromJsonAsync<List<HospitalResponse>>("api/Hospital");
+                // Debugging statement
+                Console.WriteLine("Hospitals retrieved:", Hospitals);
+
+                // Update UI
+                StateHasChanged();
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    // Define chart data and labels
+    private List<decimal> chartData = new List<decimal> { 65, 59, 80, 81, 56, 55, 40 };
+    private List<string> chartLabels = new List<string> { "January", "February", "March", "April", "May", "June", "July" };
+
+
+
+    protected async Task Create()
+    {
+        _navigationManager.NavigateTo("/addhospital");
+    }
+
+    protected async Task Delete(Guid id)
+    {
+        try
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+            await _httpClient.DeleteAsync($"api/Hospital?id={id}");
+            Hospitals = await _httpClient.GetFromJsonAsync<List<HospitalResponse>>("api/Hospital");
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    // events
+    void StartedEditingItem(HospitalResponse item)
+    {
+        _events.Insert(0, $"Event = StartedEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    void CanceledEditingItem(HospitalResponse item)
+    {
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+    private async void CommittedItemChanges(HospitalResponse item)
+    {
+        var updateRequest = new HospitalUpdateRequest
+            {
+                Id = item.Id,
+                Location = item.Location,
+                Name = item.Name
+            };
+        try
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+            _httpClient.PutAsJsonAsync<HospitalUpdateRequest>("api/Hospital", updateRequest);
+            _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+} *@
+
+
+
+@* <MudPaper Class="pa-4">
+    <MudDataGrid T="HospitalResponse" Items="@Hospitals" Bordered="true">
+        <Columns>
+            <MudDataGridTextColumn Property="Name" Title="Name" />
+            <MudDataGridTextColumn Property="Location" Title="Location" />
+            <!-- Add more columns as needed -->
+        </Columns>
+    </MudDataGrid>
+</MudPaper>
+
+@code {
+    [Inject]
+    private CustomAuthenticationStateProvider authenticationStateProvider { get; set; }
+
+    private string authToken;
+    private IEnumerable<HospitalResponse> Hospitals; // Assuming HospitalResponse is your model class for hospitals
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                Hospitals = await _httpClient.GetFromJsonAsync<List<HospitalResponse>>("api/Hospital");
+                // Debugging statement
+                Console.WriteLine("Hospitals retrieved:", Hospitals);
+
+                // Update UI
+                StateHasChanged();
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+} *@
+
+
+@* <MudPaper Class="pa-4">
+    <MudChart ChartType="ChartType.Pie" InputData="@data" @bind-SelectedIndex="Index" InputLabels="@labels" Width="300px" Height="300px" />
+</MudPaper>
+<MudPaper Class="pa-4 mt-2 d-flex justify-center">
+    <MudButton OnClick="AddDataSize" Variant="Variant.Filled" Color="Color.Primary">Add</MudButton>
+    <MudButton @onclick="RandomizeData" Variant="Variant.Filled" Class="mx-4">Randomize</MudButton>
+    <MudButton OnClick="RemoveDataSize" Variant="Variant.Filled" Color="Color.Secondary">Remove</MudButton>
+</MudPaper>
+<MudText Typo="Typo.h6">Selected portion of the chart: @Index</MudText>
+@code {
+    private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
+    int dataSize = 4;
+    double[] data = { 77, 25, 20, 5 };
+    string[] labels = { "Uranium", "Plutonium", "Thorium", "Caesium", "Technetium", "Promethium",
+                        "Polonium", "Astatine", "Radon", "Francium", "Radium", "Actinium", "Protactinium",
+                        "Neptunium", "Americium", "Curium", "Berkelium", "Californium", "Einsteinium", "Mudblaznium" };
+
+    Random random = new Random();
+
+    void RandomizeData()
+    {
+        var new_data = new double[dataSize];
+        for (int i = 0; i < new_data.Length; i++)
+            new_data[i] = random.NextDouble() * 100;
+        data = new_data;
+        StateHasChanged();
+    }
+
+    void AddDataSize()
+    {
+        if (dataSize < 20)
+        {
+            dataSize = dataSize + 1;
+            RandomizeData();
+        }
+    }
+    void RemoveDataSize()
+    {
+        if (dataSize > 0)
+        {
+            dataSize = dataSize - 1;
+            RandomizeData();
+        }
+    }
+}
+ *@
+@* 
+@using MudBlazor
+@using MudBlazor.Charts
+
+<MudContainer>
+    <MudPaper Elevation="4">
+        <MudChart @ref="pieChart" ChartType="ChartType.Pie">
+            <MudChartTitle>Patients by Gender</MudChartTitle>
+            <MudChartLabels>@pieChartLabels</MudChartLabels>
+            <MudChartSeriesCollection>
+                <MudChartSeriesCollectionItem Name="Male" Data="@maleData" />
+                <MudChartSeriesCollectionItem Name="Female" Data="@femaleData" />
+            </MudChartSeriesCollection>
+        </MudChart>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private MudChart<ChartOptions> pieChart;
+    private List<string> pieChartLabels = new List<string> { "Male", "Female" };
+    private List<int> maleData = new List<int> { 50, 30 }; // Sample data, replace with actual data
+    private List<int> femaleData = new List<int> { 20, 40 }; // Sample data, replace with actual data
+}
+ *@

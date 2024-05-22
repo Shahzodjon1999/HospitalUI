@@ -1,8 +1,8 @@
 ﻿@page "/worker"
 <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить</MudButton><br /><br />
-@if (floors != null)
+@if (workers != null)
 {
-    <MudDataGrid T="WorkerResponse" Items="@floors" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+    <MudDataGrid T="WorkerResponse" Items="@workers" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
                  StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
                  Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
         <Columns>
@@ -11,7 +11,7 @@
                     <MudText>Номер</MudText>
                 </HeaderTemplate>
                 <CellTemplate Context="context">
-                    <MudText>@((floors.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
+                    <MudText>@((workers.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
                 </CellTemplate>
             </TemplateColumn>
             <PropertyColumn Property="x => x.FirstName" Title="Имя"/>
@@ -49,7 +49,7 @@
 
     private WorkerRequest floorRequest = new();
 
-    private IEnumerable<WorkerResponse> floors;
+    private IEnumerable<WorkerResponse> workers;
 
     protected override async Task OnInitializedAsync()
     {
@@ -59,7 +59,7 @@
             if (authToken != null)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                floors = await _httpClient.GetFromJsonAsync<List<WorkerResponse>>("api/Worker");
+                workers = await _httpClient.GetFromJsonAsync<List<WorkerResponse>>("api/Worker");
             }
         }
         catch (Exception)
@@ -76,7 +76,7 @@
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
         await _httpClient.DeleteAsync($"api/Worker?id={id}");
-        floors = await _httpClient.GetFromJsonAsync<List<WorkerResponse>>("api/Worker");
+        workers = await _httpClient.GetFromJsonAsync<List<WorkerResponse>>("api/Worker");
     }
 
     // events

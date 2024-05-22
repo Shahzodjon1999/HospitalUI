@@ -58,13 +58,13 @@
                 </div>
                 <div class="mb-3">
                     <label>Дата рождения</label>
-                <InputDate @bind-Value="patientRequest.DateOfBirth" class="form-control" ParsingErrorMessage="Must be a date" />
-                <ValidationMessage For="() => patientRequest.DateOfBirth" />
+                    <input type="datetime-local" @bind="patientRequest.DateOfBirth" class="form-control" />
+                    <ValidationMessage For="() => patientRequest.DateOfBirth" />
                 </div>
                 <div class="mb-3">
                     <label>Дата регистрации</label>
-                <InputDate @bind-Value="patientRequest.DateRegister" class="form-control" ParsingErrorMessage="Must be a date" />
-                <ValidationMessage For="() => patientRequest.DateRegister" />
+                    <input type="datetime-local" @bind="patientRequest.DateRegister" class="form-control" />
+                    <ValidationMessage For="() => patientRequest.DateRegister" />
                 </div>
                 <div class="mb-3 d-grid gap-2">
                     <button type="submit" class="btn btn-outline-success">Сохранить</button>

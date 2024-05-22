@@ -1,0 +1,87 @@
+﻿@page "/register"
+<div class="row">
+    <div class="col-lg-4 offset-lg-4 pt-4 border">
+        <EditForm Model="@clientRequest" OnValidSubmit="Create" FormName="WorkerForm">
+            <DataAnnotationsValidator />
+            <div class="mb-3 text-center flex-column">
+                <h3>Регистрация</h3>
+            </div>
+            <div class="mb-3">
+                <label>Имя</label>
+                <InputText @bind-Value="clientRequest.FirstName" class="form-control" />
+                <ValidationMessage For="() => clientRequest.FirstName" />
+            </div>
+            <div class="mb-3">
+                <label>Фамилия</label>
+                <InputText @bind-Value="clientRequest.LastName" class="form-control" />
+                <ValidationMessage For="() => clientRequest.LastName" />
+            </div>
+            <div class="mb-3">
+                <label>Адресс</label>
+                <InputText @bind-Value="clientRequest.Address" class="form-control" />
+                <ValidationMessage For="() => clientRequest.Address" />
+            </div>
+            <div class="mb-3">
+                <label>Номер телфон</label>
+                <InputText @bind-Value="clientRequest.PhoneNumber" class="form-control" />
+                <ValidationMessage For="() => clientRequest.PhoneNumber" />
+            </div>
+            <div class="mb-3">
+                <label>Логин</label>
+                <InputText @bind-Value="clientRequest.Login" class="form-control" />
+                <ValidationMessage For="() => clientRequest.Login" />
+            </div>
+             <div class="mb-3">
+                <label>Парол</label>
+                <InputText @bind-Value="clientRequest.Password" class="form-control" />
+                <ValidationMessage For="() => clientRequest.Password" />
+            </div>
+            <div class="mb-3">
+                <label>Email</label>
+                <InputText @bind-Value="clientRequest.Email" class="form-control" />
+                <ValidationMessage For="() => clientRequest.Email" />
+            </div>
+            <div class="mb-3">
+                <label>Дата рождения</label>
+                <input type="datetime-local" @bind="clientRequest.DateOfBirth" class="form-control" />
+                <ValidationMessage For="() => clientRequest.DateOfBirth" />
+            </div>
+            <div class="mb-3">
+                <label>Дата регистрации</label>
+                <input type="datetime-local" @bind="clientRequest.DateRegister" class="form-control" />
+                <ValidationMessage For="() => clientRequest.DateRegister" />
+            </div>
+            <div class="mb-3 d-grid gap-2">
+                <button type="submit" class="btn btn-outline-success">Сохранить</button>
+                <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+@code {
+    private ClientRequest clientRequest = new ClientRequest();
+    protected async Task Create()
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync<ClientRequest>("api/Client", clientRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                clientRequest = new ClientRequest();
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Ошибка");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    private void Back()
+    {
+        _navigationManager.NavigateTo("/login");
+    }
+}

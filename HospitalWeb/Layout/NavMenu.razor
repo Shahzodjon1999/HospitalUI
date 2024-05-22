@@ -6,7 +6,10 @@
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">HospitalWeb</a>
+        <a class="navbar-brand" href="">
+            <img src="images/hospital.png" alt="Hospital Logo" class="logo" style="height: 30px; margin-right: 10px;" />
+            Hospital Menagement
+        </a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -21,70 +24,72 @@
             </NavLink>
         </div>
 
-           <AuthorizeView Roles="Admin">
+        
+
+           <AuthorizeView Roles="Client,Admin">
             <Authorized>
-            <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="hospitalmud">
-                        <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Больница
-                </NavLink>
-            </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="appointment">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarToday" />  Броньи
+                    </NavLink>
+                </div>
                </Authorized>
         </AuthorizeView>
         <AuthorizeView Roles="Admin">
             <Authorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="hospital">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Больницы
+                        <MudIcon Icon="@Icons.Material.Filled.LocalHospital" />  Больницы
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="branch">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Филиалы
+                        <MudIcon Icon="@Icons.Material.Filled.Apartment" />  Филиалы
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="department">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Отделения
+                        <MudIcon Icon="@Icons.Material.Filled.BusinessCenter" />  Отделения
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="floor">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Этажи
+                        <MudIcon Icon="@Icons.Material.Filled.Layers" /> Этажи
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="room">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Комнаты
+                        <MudIcon Icon="@Icons.Material.Filled.Room" /> Комнаты
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="doctor">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Врачи
+                        <MudIcon Icon="@Icons.Material.Filled.LocalPharmacy" /> Врачи
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="worker">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Cотрудники
+                        <MudIcon Icon="@Icons.Material.Filled.Person" /> Cотрудники
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="patient">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Пациенты
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="appointment">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Броньи
+                        <MudIcon Icon="@Icons.Material.Filled.Group" /> Пациенты
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="role">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Роли
+                        <MudIcon Icon="@Icons.Material.Filled.Security" /> Роли
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="position">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Должности
+                        <MudIcon Icon="@Icons.Material.Filled.Work" /> Должности
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="hospitaldiagram">
+                        <MudIcon Icon="@Icons.Material.Filled.Schema" /> Hospital Diagram
                     </NavLink>
                 </div>
         </Authorized>

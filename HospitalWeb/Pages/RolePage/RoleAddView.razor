@@ -1,4 +1,6 @@
 ﻿@page "/addrole"
+@if (workers!=null)
+{
 <div class="row">
     <div class="col-lg-4 offset-lg-4 pt-4 border">
         <EditForm Model="@roleRequest" OnValidSubmit="Create" FormName="PositionForm">
@@ -11,6 +13,20 @@
                 <InputText @bind-Value="roleRequest.Name" class="form-control" />
                 <ValidationMessage For="() => roleRequest.Name" />
             </div>
+            <div class="mb-3">
+                <label>Status</label>
+                <InputSelect @bind-Value="roleRequest.Status" class="form-control" />
+                <ValidationMessage For="() => roleRequest.Status" />
+            </div>
+            <div class="mb-3">
+            <label>Cотрудники</label>
+            <select @bind="roleRequest.WorkerId" class="form-control">
+                @foreach (var pos in workers)
+                {
+                    <option value="@pos.Id">@pos.FirstName @pos.LastName</option>
+                }
+            </select>
+            </div>
             <div class="mb-3 d-grid gap-2">
                 <button type="submit" class="btn btn-outline-success">Сохранить</button>
                 <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
@@ -18,14 +34,15 @@
         </EditForm>
     </div>
 </div>
+}
 @code {
     [Inject]
     private CustomAuthenticationStateProvider? authenticationStateProvider { get; set; }
 
     private string? authToken;
     private RoleRequest roleRequest = new RoleRequest();
-
-    protected async Task Create()
+    private IEnumerable<WorkerResponse> workers;
+    protected override async Task OnInitializedAsync()
     {
         try
         {
@@ -33,16 +50,28 @@
             if (authToken != null)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                var response = await _httpClient.PostAsJsonAsync<RoleRequest>("api/Role", roleRequest);
-                if (response.IsSuccessStatusCode)
-                {
-                    await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
-                    roleRequest = new RoleRequest();
-                }
-                else
-                {
-                    await _js.InvokeVoidAsync("alert", "Ошибка");
-                }
+                workers = await _httpClient.GetFromJsonAsync<List<WorkerResponse>>("api/Worker");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    protected async Task Create()
+    {
+        try
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+            var response = await _httpClient.PostAsJsonAsync<RoleRequest>("api/Role", roleRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                roleRequest = new RoleRequest();
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Ошибка");
             }
         }
         catch (Exception)

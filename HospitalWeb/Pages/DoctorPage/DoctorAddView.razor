@@ -1,5 +1,5 @@
 ﻿@page "/adddoctor"
-@if (positions != null)
+@if (departmentList != null)
 {
     <div class="row">
         <div class="col-lg-4 offset-lg-4 pt-4 border">
@@ -36,7 +36,7 @@
                 <div class="mb-3">
                     <label>Отделение</label>
                     <select @bind="doctorRequest.DepartmentId" class="form-control">
-                        @foreach (var pos in positions)
+                        @foreach (var pos in departmentList)
                         {
                             <option value="@pos.Id">@pos.Name</option>
                         }
@@ -44,12 +44,12 @@
                 </div>
                 <div class="mb-3">
                     <label>Дата рождения</label>
-                    <InputDate @bind-Value="doctorRequest.DateOfBirth" class="form-control" ParsingErrorMessage="Must be a date" />
+                    <input type="datetime-local" @bind="doctorRequest.DateOfBirth" class="form-control" />
                     <ValidationMessage For="() => doctorRequest.DateOfBirth" />
                 </div>
                 <div class="mb-3">
                     <label>Дата регистрации</label>
-                    <InputDate @bind-Value="doctorRequest.DateRegister" class="form-control" ParsingErrorMessage="Must be a date" />
+                    <input type="datetime-local" @bind="doctorRequest.DateRegister" class="form-control" />
                     <ValidationMessage For="() => doctorRequest.DateRegister" />
                 </div>
                 <div class="mb-3 d-grid gap-2">
@@ -68,7 +68,7 @@
     private string? authToken;
     private DoctorRequest doctorRequest = new DoctorRequest();
 
-    private IEnumerable<DepartmentResponse>? positions;
+    private IEnumerable<DepartmentResponse>? departmentList;
     private DepartmentResponse? selectOptions;
     protected override async Task OnInitializedAsync()
     {
@@ -78,7 +78,7 @@
             if (authToken != null)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                positions = await _httpClient.GetFromJsonAsync<List<DepartmentResponse>>("api/Department");
+                departmentList = await _httpClient.GetFromJsonAsync<List<DepartmentResponse>>("api/Department");
             }
         }
         catch (Exception)

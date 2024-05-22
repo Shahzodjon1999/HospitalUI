@@ -1,37 +1,56 @@
 ﻿@page "/addappointment"
-<div class="row">
-    <div class="col-lg-4 offset-lg-4 pt-4 border">
-        <EditForm Model="@appointmentRequest" OnValidSubmit="Create" FormName="PositionForm">
-            <DataAnnotationsValidator />
-            <div class="mb-3 text-center flex-column">
-                <h3>Встреча</h3>
-            </div>
-            <div class="mb-3">
-                <label>Имя</label>
-                <InputText @bind-Value="appointmentRequest.Name" class="form-control" />
-                <ValidationMessage For="() => appointmentRequest.Name" />
-            </div>
-            <div class="mb-3">
-                <label>Доктор</label>
-                <select @bind="appointmentRequest.DoctorId" class="form-control">
-                    @foreach (var pos in positions)
-                    {
-                        <option value="@pos.Id">@pos.FirstName @pos.LastName</option>
-                    }
-                </select>
-            </div>
-            <div class="mb-3">
-                <label>Дата регистрации</label>
-                <InputDate @bind-Value="appointmentRequest.AppointmentDate" class="form-control" ParsingErrorMessage="Must be a date" />
-                <ValidationMessage For="() => appointmentRequest.AppointmentDate" />
-            </div>
-            <div class="mb-3 d-grid gap-2">
-                <button type="submit" class="btn btn-outline-success">Сохранить</button>
-                <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
-            </div>
-        </EditForm>
+@using Microsoft.AspNetCore.Components.Forms
+@if(doctorList!=null)
+{
+    <div class="row">
+        <div class="col-lg-4 offset-lg-4 pt-4 border">
+            <EditForm Model="@appointmentRequest" OnValidSubmit="Create" FormName="PositionForm">
+                <DataAnnotationsValidator />
+                <div class="mb-3 text-center flex-column">
+                    <h3>Встреча</h3>
+                </div>
+                <div class="mb-3">
+                    <label>Имя</label>
+                    <InputText @bind-Value="appointmentRequest.Name" class="form-control" />
+                    <ValidationMessage For="() => appointmentRequest.Name" />
+                </div>
+                <div class="mb-3">
+                    <label>Фамилия</label>
+                    <InputText @bind-Value="appointmentRequest.lastName" class="form-control" />
+                    <ValidationMessage For="() => appointmentRequest.lastName" />
+                </div>
+                <div class="mb-3">
+                    <label>Email</label>
+                    <InputText @bind-Value="appointmentRequest.Email" class="form-control" />
+                    <ValidationMessage For="() => appointmentRequest.Email" />
+                </div>
+                <div class="mb-3">
+                    <label>Номар телефон</label>
+                    <InputText @bind-Value="appointmentRequest.PhoneNumber" class="form-control" />
+                    <ValidationMessage For="() => appointmentRequest.Email" />
+                </div>
+                <div class="mb-3">
+                    <label>Врач</label>
+                    <select @bind="appointmentRequest.DoctorId" class="form-control">
+                        @foreach (var pos in doctorList)
+                        {
+                            <option value="@pos.Id">@pos.FirstName @pos.LastName</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label>Дата и время регистрации</label>
+                    <input type="datetime-local" @bind="appointmentRequest.AppointmentDate" class="form-control" />
+                    <ValidationMessage For="() => appointmentRequest.AppointmentDate" />
+                </div>
+                <div class="mb-3 d-grid gap-2">
+                    <button type="submit" class="btn btn-outline-success">Сохранить</button>
+                    <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+                </div>
+            </EditForm>
+        </div>
     </div>
-</div>
+}
 @code {
     [Inject]
     private CustomAuthenticationStateProvider? authenticationStateProvider { get; set; }
@@ -39,7 +58,7 @@
     private string? authToken;
     private AppointmentRequest appointmentRequest = new AppointmentRequest();
 
-    private IEnumerable<DoctorResponse>? positions;
+    private IEnumerable<DoctorResponse>? doctorList;
     private DoctorResponse? selectOptions;
     protected override async Task OnInitializedAsync()
     {
@@ -49,7 +68,7 @@
             if (authToken != null)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                positions = await _httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Doctor");
+                doctorList = await _httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Doctor");
             }
         }
         catch (Exception)

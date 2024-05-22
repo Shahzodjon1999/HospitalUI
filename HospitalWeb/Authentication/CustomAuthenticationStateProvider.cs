@@ -36,7 +36,6 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
             return await Task.FromResult(new AuthenticationState(_anonymous));
         }
     }
-
     public async Task UpdateAuthenticationState(AuthSessionToken? userSession)
     {
         ClaimsPrincipal claimsPrincipal;
@@ -57,7 +56,6 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
         }
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));
     }
-
     public async Task<string> GetToken()
     {
         var result = string.Empty;
@@ -76,4 +74,53 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
         }
         return result;
     }
+    public async Task<string> GetRefreshToken()
+    {
+        var result = string.Empty;
+        try
+        {
+            var userSession = await _sessionStorage.ReadEncryptedItemAsync<AuthSessionToken>("UserSession");
+            if (userSession != null)
+            {
+                result = userSession.RefreshToken;
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        return result;
+    }
+    public bool IsAuthenticated { get; set; }
+    //bool IsTokenExpired => token == null || token.ExpireTime < DateTimeOffset.Now;
+    //public void Logout()
+    //{
+    //    UpdateTokenInfo(false);
+    //}
+    //private void UpdateTokenInfo(bool successfullyAuthenticated, TokenInfo tokenInfo = null)
+    //{
+    //    if (successfullyAuthenticated)
+    //    {
+    //        IsAuthenticated = true;
+    //        token = tokenInfo;
+
+    //        _localStorage.SetItem(nameof(TokenInfo), tokenInfo);
+    //    }
+    //    else
+    //    {
+    //        IsAuthenticated = false;
+    //        token = null;
+
+    //        _localStorage.RemoveItem(nameof(TokenInfo));
+    //    }
+    //}
+    //private void LoadTokenInfo()
+    //{
+    //    if (_localStorage.ContainKey(nameof(TokenInfo)))
+    //    {
+    //        token = _localStorage.GetItem<TokenInfo>(nameof(TokenInfo));
+    //        IsAuthenticated = !IsTokenExpired;
+    //    }
+    //}
 }
