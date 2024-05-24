@@ -27,7 +27,7 @@
             <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
                 <CellTemplate>
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
-                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="@(async () => await Delete(context.Item.Id))" />
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="() => ConfirmDelete(context.Item.Id)" />
                 </CellTemplate>
             </TemplateColumn>
         </Columns>
@@ -76,6 +76,23 @@
         _navigationManager.NavigateTo("/addpatient");
     }
 
+    private async Task ConfirmDelete(Guid id)
+    {
+        var parameters = new DialogParameters
+            {
+                ["Message"] = "Вы уверены, что хотите удалить"
+            };
+
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        var dialog = DialogService.Show<ConfirmDialog>("Подтверждение", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            await Delete(id);
+        }
+    }
     protected async Task Delete(Guid id)
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);

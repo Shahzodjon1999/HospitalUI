@@ -24,7 +24,7 @@
             <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
                 <CellTemplate>
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
-                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="@(async () => await Delete(context.Item.Id))" />
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="() => ConfirmDelete(context.Item.Id)" />
                 </CellTemplate>
             </TemplateColumn>
         </Columns>
@@ -40,18 +40,16 @@
 @code {
     [Inject]
     private CustomAuthenticationStateProvider authenticationStateProvider { get; set; }
-
     private string authToken;
-
     private bool _readOnly;
     private bool _isCellEditMode;
-    private List<string> _events = new();
     private bool _editTriggerRowClick;
 
     private AppointmentRequest appointmentRequest = new();
 
-
     private IEnumerable<AppointmentResponse> appointments;
+
+    private List<string> _events = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -66,13 +64,31 @@
         }
         catch (Exception)
         {
-
             throw;
         }
     }
+
     protected async Task Create()
     {
         _navigationManager.NavigateTo("/addappointment");
+    }
+
+    private async Task ConfirmDelete(Guid id)
+    {
+        var parameters = new DialogParameters
+            {
+                ["Message"] = "Вы уверены, что хотите удалить"
+            };
+
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        var dialog = DialogService.Show<ConfirmDialog>("Подтверждение", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            await Delete(id);
+        }
     }
 
     protected async Task Delete(Guid id)
@@ -92,16 +108,17 @@
     {
         _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
     }
+
     void CommittedItemChanges(AppointmentResponse item)
     {
         var updateRequest = new AppointmentUpdateRequest
             {
                 Id = item.Id,
-                Name=item.Name,
-                AppointmentDate=item.AppointmentDate,
-                Email=item.Email,
-                PhoneNumber=item.PhoneNumber,
-                lastName=item.Name,
+                Name = item.Name,
+                AppointmentDate = item.AppointmentDate,
+                Email = item.Email,
+                PhoneNumber = item.PhoneNumber,
+                lastName = item.lastName,
             };
 
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
