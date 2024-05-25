@@ -110,7 +110,7 @@
     {
         _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
     }
-    private async void CommittedItemChanges(DepartmentResponse item)
+    private void CommittedItemChanges(DepartmentResponse item)
     {
         var updateRequest = new DepartmentUpdateRequest
             {

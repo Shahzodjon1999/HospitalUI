@@ -46,12 +46,9 @@
 
     private WorkerRequest floorRequest = new();
 
-    private IEnumerable<BranchResponse> branchs;
-
+    private IEnumerable<BranchResponse>? branchs;
 
     private List<string> _events = new();
-
-    private Guid appointmentIdToDelete;
 
     protected override async Task OnInitializedAsync()
     {

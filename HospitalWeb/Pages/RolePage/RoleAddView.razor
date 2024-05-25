@@ -41,7 +41,7 @@
 
     private string? authToken;
     private RoleRequest roleRequest = new RoleRequest();
-    private IEnumerable<WorkerResponse> workers;
+    private IEnumerable<WorkerResponse>? workers;
     protected override async Task OnInitializedAsync()
     {
         try

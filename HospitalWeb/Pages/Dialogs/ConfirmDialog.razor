@@ -15,9 +15,9 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
-    [Parameter] public string Title { get; set; }
-    [Parameter] public string Message { get; set; }
+    [CascadingParameter] MudDialogInstance? MudDialog { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Message { get; set; }
 
     void Cancel() => MudDialog.Cancel();
     void Confirm() => MudDialog.Close(DialogResult.Ok(true));

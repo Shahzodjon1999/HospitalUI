@@ -23,7 +23,7 @@
     private CustomAuthenticationStateProvider? authenticationStateProvider { get; set; }
 
     private string? authToken;
-    private PositionRequest positionRequest = new PositionRequest();
+    private PositionRequest? positionRequest = new PositionRequest();
 
     protected async Task Create()
     {

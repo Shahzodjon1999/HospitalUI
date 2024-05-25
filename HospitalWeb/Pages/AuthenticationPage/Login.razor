@@ -54,7 +54,7 @@
                 return;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             await _js.InvokeVoidAsync("alert", "API сервера не работает!!!");
         }
