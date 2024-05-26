@@ -1,0 +1,58 @@
+﻿@page "/dashboard"
+@inject DashboardService DashboardService
+@using Blazorise.Charts
+@using HospitalWeb.Services
+
+<h3>Dashboard</h3>
+@if (barChart!=null)
+{
+    <div class="dashboard-container">
+        <!-- Existing components -->
+
+        <div class="card">
+            <div class="card-header">
+                Appointments Chart
+            </div>
+            <div class="card-body">
+                <BarChart TItem="int" @ref="barChart" />
+            </div>
+        </div>
+    </div>
+
+}
+@code {
+    private BarChart<int> barChart;
+    private bool dataLoaded = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Existing data retrieval logic, if any
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !dataLoaded)
+        {
+            await LoadChartData();
+            dataLoaded = true;
+            StateHasChanged(); // Refresh the UI after data load
+        }
+    }
+
+    private async Task LoadChartData()
+    {
+        var data = new List<int> { 10, 20, 30, 40, 50 }; // Converted to List<int>
+
+        await barChart.AddLabelsDatasetsAndUpdate(
+            new string[] { "January", "February", "March", "April", "May" },
+            new BarChartDataset<int>
+                {
+                    Label = "Appointments",
+                    Data = data,
+                    BackgroundColor = new List<string> { "rgba(75, 192, 192, 0.2)" },
+                    BorderColor = new List<string> { "rgba(75, 192, 192, 1)" },
+                    BorderWidth = 1
+                }
+        );
+    }
+}

@@ -1,4 +1,6 @@
 ﻿@page "/adddoctor"
+@using System.Text.Json
+
 @if (departmentList != null)
 {
     <div class="row">
@@ -34,6 +36,15 @@
                     <ValidationMessage For="() => doctorRequest.Positions" />
                 </div>
                 <div class="mb-3">
+                    <label>Выбрайте image</label>
+                    <InputFile OnChange="HandleFileChange" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label>Информация</label>
+                    <InputText @bind-Value="doctorRequest.Information" class="form-control" />
+                    <ValidationMessage For="() => doctorRequest.Information" />
+                </div>
+                <div class="mb-3">
                     <label>Отделение</label>
                     <select @bind="doctorRequest.DepartmentId" class="form-control">
                         @foreach (var pos in departmentList)
@@ -62,6 +73,157 @@
 }
 
 @code {
+    private string? authToken;
+    private DoctorRequest doctorRequest = new DoctorRequest();
+    private IEnumerable<DepartmentResponse>? departmentList;
+    private IBrowserFile? selectedFile;
+    private byte[]? selectedFileBytes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await _authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                departmentList = await _httpClient.GetFromJsonAsync<List<DepartmentResponse>>("api/Department");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    private async Task Create()
+    {
+        try
+        {
+            if (selectedFileBytes != null)
+            {
+                doctorRequest.Image = selectedFileBytes;
+
+                var jsonRequest = JsonSerializer.Serialize(doctorRequest);
+                var content = new StringContent(jsonRequest, System.Text.Encoding.UTF8, "application/json");
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                var response = await _httpClient.PostAsync("api/Doctor/Create", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                    doctorRequest = new DoctorRequest();
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "Ошибка");
+                }
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Please select an image file.");
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"An error occurred: {ex.Message}");
+        }
+    }
+
+    private async void HandleFileChange(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        using (var memoryStream = new MemoryStream())
+        {
+            await selectedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(memoryStream);
+            selectedFileBytes = memoryStream.ToArray();
+        }
+    }
+
+    private void Back()
+    {
+        _navigationManager.NavigateTo("/doctor");
+    }
+}
+
+
+
+@* @if (departmentList != null)
+{
+    <div class="row">
+        <div class="col-lg-4 offset-lg-4 pt-4 border">
+            <EditForm Model="@doctorRequest" OnValidSubmit="Create" FormName="WorkerForm">
+                <DataAnnotationsValidator />
+                <div class="mb-3 text-center flex-column">
+                    <h3>Регистрация</h3>
+                </div>
+                <div class="mb-3">
+                    <label>Имя</label>
+                    <InputText @bind-Value="doctorRequest.FirstName" class="form-control" />
+                    <ValidationMessage For="() => doctorRequest.FirstName" />
+                </div>
+                <div class="mb-3">
+                    <label>Фамилия</label>
+                    <InputText @bind-Value="doctorRequest.LastName" class="form-control" />
+                    <ValidationMessage For="() => doctorRequest.LastName" />
+                </div>
+                <div class="mb-3">
+                    <label>Адресс</label>
+                    <InputText @bind-Value="doctorRequest.Address" class="form-control" />
+                    <ValidationMessage For="() => doctorRequest.Address" />
+                </div>
+                <div class="mb-3">
+                    <label>Номер телфон</label>
+                    <InputText @bind-Value="doctorRequest.PhoneNumber" class="form-control" />
+                    <ValidationMessage For="() => doctorRequest.PhoneNumber" />
+                </div>
+                <div class="mb-3">
+                    <label>Позиция</label>
+                    <InputText @bind-Value="doctorRequest.Positions" class="form-control" />
+                    <ValidationMessage For="() => doctorRequest.Positions" />
+                </div>
+                <div class="mb-3">
+                    <label>Выбрайте image</label>
+                    <InputFile OnChange="HandleFileChange" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label>Информация</label>
+                    <InputText @bind-Value="doctorRequest.Information" class="form-control" />
+                    <ValidationMessage For="() => doctorRequest.Information" />
+                </div>
+                <div class="mb-3">
+                    <label>Отделение</label>
+                    <select @bind="doctorRequest.DepartmentId" class="form-control">
+                        @foreach (var pos in departmentList)
+                        {
+                            <option value="@pos.Id">@pos.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label>Дата рождения</label>
+                    <input type="datetime-local" @bind="doctorRequest.DateOfBirth" class="form-control" />
+                    <ValidationMessage For="() => doctorRequest.DateOfBirth" />
+                </div>
+                <div class="mb-3">
+                    <label>Дата регистрации</label>
+                    <input type="datetime-local" @bind="doctorRequest.DateRegister" class="form-control" />
+                    <ValidationMessage For="() => doctorRequest.DateRegister" />
+                </div>
+                <div class="mb-3 d-grid gap-2">
+                    <button type="submit" class="btn btn-outline-success">Сохранить</button>
+                    <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+    @if (uploadMessage != null)
+    {
+        <p>@uploadMessage</p>
+    }
+}
+
+@code {
     [Inject]
     private CustomAuthenticationStateProvider? authenticationStateProvider { get; set; }
 
@@ -69,6 +231,8 @@
     private DoctorRequest doctorRequest = new DoctorRequest();
 
     private IEnumerable<DepartmentResponse>? departmentList;
+    private string uploadMessage;
+    private IBrowserFile selectedFile;
     protected override async Task OnInitializedAsync()
     {
         try
@@ -89,17 +253,47 @@
     {
         try
         {
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-            var response = await _httpClient.PostAsJsonAsync<DoctorRequest>("api/Doctor", doctorRequest);
-            if (response.IsSuccessStatusCode)
+            if (selectedFile != null)
             {
-                await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
-                doctorRequest = new DoctorRequest();
+                var content = new MultipartFormDataContent();
+                content.Add(new StringContent(doctorRequest.FirstName), "FirstName");
+                content.Add(new StringContent(doctorRequest.LastName), "LastName");
+                content.Add(new StringContent(doctorRequest.PhoneNumber), "PhoneNumber");
+                content.Add(new StringContent(doctorRequest.Address), "Address");
+                content.Add(new StringContent(doctorRequest.Positions), "Positions");
+                content.Add(new StringContent(doctorRequest.Information), "Information");
+                content.Add(new StringContent(doctorRequest.DepartmentId.ToString()), "DepartmentId");
+
+                var fileContent = new StreamContent(selectedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024));
+                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(selectedFile.ContentType);
+                content.Add(fileContent, "ImageFile", selectedFile.Name);
+
+                var response = _httpClient.PostAsync("api/doctors/upload", content);
+
+                if (response.IsCompletedSuccessfully)
+                {
+                    uploadMessage = "Doctor created successfully!";
+                }
+                else
+                {
+                    uploadMessage = "Failed to create doctor.";
+                }
             }
             else
             {
-                await _js.InvokeVoidAsync("alert", "Ошибка");
+                uploadMessage = "Please select an image file.";
             }
+            // _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+            // var response = await _httpClient.PostAsJsonAsync<DoctorRequest>("api/Doctor", doctorRequest);
+            // if (response.IsSuccessStatusCode)
+            // {
+            //     await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+            //     doctorRequest = new DoctorRequest();
+            // }
+            // else
+            // {
+            //     await _js.InvokeVoidAsync("alert", "Ошибка");
+            // }
         }
         catch (Exception)
         {
@@ -110,4 +304,9 @@
     {
         _navigationManager.NavigateTo("/doctor");
     }
+    private void HandleFileChange(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+    }
 }
+ *@

@@ -41,11 +41,7 @@
 }
 
 @code {
-    [Inject]
-    private CustomAuthenticationStateProvider authenticationStateProvider { get; set; }
-
     private string authToken;
-
     private bool _readOnly;
     private bool _isCellEditMode;
     private List<string> _events = new();
@@ -59,7 +55,7 @@
     {
         try
         {
-            authToken = await authenticationStateProvider.GetToken();
+            authToken = await _authenticationStateProvider.GetToken();
             if (authToken != null)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);

@@ -1,4 +1,5 @@
 ﻿using HospitalDTO.Entity;
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace HospitalDTO.RequestModel;
@@ -14,6 +15,10 @@ public record DoctorRequest : EntityBaseRequest
     public string PhoneNumber { get; set; } = string.Empty;
     [Required(AllowEmptyStrings = false, ErrorMessage = "Пожалуйста предоставьте Адресс")]
     public string Address { get; set; } = string.Empty;
+
+    public byte[]? Image { get; set; }
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Пожалуйста предоставьте Информация")]
+    public string Information { get; set; } = string.Empty;
     [Required(AllowEmptyStrings = false, ErrorMessage = "Пожалуйста предоставьте Должност")]
     public Guid PositionId { get; set; }
     [Required(AllowEmptyStrings = false, ErrorMessage = "Пожалуйста предоставьте Дата рождения")]
