@@ -5,21 +5,24 @@
 <br />
 @if (floors != null)
 {
+    <div class="text-center">
+        <h4>Список ролей</h4>
+    </div>
     <MudDataGrid T="RoleResponse" Items="@floors" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
                  StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
                  Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
         <Columns>
             <TemplateColumn>
                 <HeaderTemplate>
-                    <MudText>Number</MudText>
+                    <MudText Class="text-center">Номер</MudText>
                 </HeaderTemplate>
                 <CellTemplate Context="context">
                     <MudText>@((floors.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Property="x => x.Name" />
-            <PropertyColumn Property="x => x.Status" />
-            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
+            <PropertyColumn Property="x => x.Name" Title="Названия" Class="text-center" />
+            <PropertyColumn Property="x => x.Status" Title="Статус" Class="text-center" />
+            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end" Title="Редак. /Удалить" Class="text-center">
                 <CellTemplate>
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="() => ConfirmDelete(context.Item.Id)" />

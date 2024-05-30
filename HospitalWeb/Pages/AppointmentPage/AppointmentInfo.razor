@@ -1,27 +1,30 @@
 ﻿@page "/appointment"
-<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Регистер встретиться</MudButton>
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Записаться к варачу</MudButton>
 <br />
 <br />
 @if (appointments != null)
 {
+     <div class="text-center">
+        <h4>Список записей</h4>
+    </div>
     <MudDataGrid T="AppointmentResponse" Items="@appointments" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
                  StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
                  Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
         <Columns>
             <TemplateColumn>
                 <HeaderTemplate>
-                    <MudText>Номер</MudText>
+                    <MudText Class="text-center">Номер</MudText>
                 </HeaderTemplate>
                 <CellTemplate Context="context">
                     <MudText>@((appointments.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Property="x => x.Name" Title="Имя" />
-            <PropertyColumn Property="x => x.lastName" Title="Фамилия" />
-            <PropertyColumn Property="x => x.Email" Title="Email" />
-            <PropertyColumn Property="x => x.PhoneNumber" Title="Номер тел" />
-            <PropertyColumn Property="x => x.AppointmentDate" Title="Дате" />
-            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
+            <PropertyColumn Property="x => x.Name" Title="Имя" Class="text-center" />
+            <PropertyColumn Property="x => x.lastName" Title="Фамилия" Class="text-center" />
+            <PropertyColumn Property="x => x.Email" Title="Email" Class="text-center" />
+            <PropertyColumn Property="x => x.PhoneNumber" Title="Номер тел" Class="text-center" />
+            <PropertyColumn Property="x => x.AppointmentDate" Title="Дата и время" Class="text-center" />
+            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end" Title="Редак. /Удалить" Class="text-center">
                 <CellTemplate>
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="() => ConfirmDelete(context.Item.Id)" />
@@ -38,8 +41,6 @@
 }
 
 @code {
-    [Inject]
-    private CustomAuthenticationStateProvider authenticationStateProvider { get; set; }
     private string authToken;
     private bool _readOnly;
     private bool _isCellEditMode;
@@ -55,7 +56,7 @@
     {
         try
         {
-            authToken = await authenticationStateProvider.GetToken();
+            authToken = await _authenticationStateProvider.GetToken();
             if (authToken != null)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);

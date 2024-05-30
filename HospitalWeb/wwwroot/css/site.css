@@ -19,3 +19,19 @@
 .card-body {
     padding: 10px;
 }
+
+/* wwwroot/css/site.css */
+.services {
+    margin-top: 20px;
+}
+
+.auth-links {
+    margin-top: 30px;
+}
+
+    .auth-links .mud-button {
+        margin-right: 10px;
+    }
+
+
+

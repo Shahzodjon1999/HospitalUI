@@ -4,26 +4,29 @@
 <br />
 @if (doctors != null)
 {
+     <div class="text-center">
+        <h4>Список докторов</h4>
+    </div>
     <MudDataGrid T="DoctorResponse" Items="@doctors" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
                  StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
                  Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
         <Columns>
             <TemplateColumn>
                 <HeaderTemplate>
-                    <MudText>Номер</MudText>
+                    <MudText Class="text-center">Номер</MudText>
                 </HeaderTemplate>
                 <CellTemplate Context="context">
                     <MudText>@((doctors.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Property="x => x.FirstName" Title="Имя"/>
-            <PropertyColumn Property="x => x.LastName" Title="Фамилия" />
-            <PropertyColumn Property="x => x.Address" Title="Адресс" />
-            <PropertyColumn Property="x => x.PhoneNumber" Title="Номер тел"/>
-            <PropertyColumn Property="x => x.Positions" Title="Позиция" />
-            <PropertyColumn Property="x => x.DateOfBirth" Title="Дата рождения" />
-            <PropertyColumn Property="x => x.DateRegister" Title="Дата регистрации" />
-            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
+            <PropertyColumn Property="x => x.FirstName" Title="Имя" Class="text-center" />
+            <PropertyColumn Property="x => x.LastName" Title="Фамилия" Class="text-center" />
+            <PropertyColumn Property="x => x.Address" Title="Адресс" Class="text-center" />
+            <PropertyColumn Property="x => x.PhoneNumber" Title="Номер тел" Class="text-center" />
+            <PropertyColumn Property="x => x.Positions" Title="Позиция" Class="text-center" />
+            <PropertyColumn Property="x => x.DateOfBirth" Title="Дата рождения" Class="text-center" />
+            <PropertyColumn Property="x => x.DateRegister" Title="Дата регистрации" Class="text-center" />
+            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end" Title="Редак. /Удалить" Class="text-center">
                 <CellTemplate>
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="() => ConfirmDelete(context.Item.Id)" />

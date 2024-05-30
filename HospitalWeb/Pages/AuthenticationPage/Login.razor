@@ -23,7 +23,6 @@
             </div>
             <div class="mb-3 d-grid gap-2">
                 <button type="submit" class="btn btn-primary">Вход</button>
-                <p @onclick="Create" class="btn btn-primary">Регистратсия</p>
             </div>
         </EditForm>
     </div>
@@ -58,10 +57,5 @@
         {
             await _js.InvokeVoidAsync("alert", "API сервера не работает!!!");
         }
-    }
-
-    private void Create()
-    {
-        _navigationManager.NavigateTo("/register");
     }
 }

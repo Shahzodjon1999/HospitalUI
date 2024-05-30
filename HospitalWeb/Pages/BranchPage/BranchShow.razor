@@ -4,22 +4,25 @@
 <br />
 @if (branchs != null)
 {
+    <div class="text-center">
+        <h4>Список филиалов</h4>
+    </div>
     <MudDataGrid T="BranchResponse" Items="@branchs" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
                  StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
                  Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
         <Columns>
             <TemplateColumn>
                 <HeaderTemplate>
-                    <MudText>Номер</MudText>
+                    <MudText Class="text-center">Номер</MudText>
                 </HeaderTemplate>
                 <CellTemplate Context="context">
                     <MudText>@((branchs.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Property="x => x.Name" Title="Название" />
-            <PropertyColumn Property="x => x.Location" Title="Адресс" />
-            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
-                <CellTemplate>
+            <PropertyColumn Property="x => x.Name" Title="Название" Class="text-center" />
+            <PropertyColumn Property="x => x.Location" Title="Адресс" Class="text-center" />
+            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end" Title="Редак. /Удалить" Class="text-center">
+                <CellTemplate >
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="() => ConfirmDelete(context.Item.Id)" />
                 </CellTemplate>

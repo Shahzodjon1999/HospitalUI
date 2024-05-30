@@ -8,7 +8,7 @@
     <div class="container-fluid">
         <a class="navbar-brand" href="">
             <img src="images/hospital.png" alt="Hospital Logo" class="logo" style="height: 30px; margin-right: 10px;" />
-            Hospital Menagement
+            Hospital
         </a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
@@ -19,84 +19,64 @@
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="flex-column">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
+            <MudNavLink Href="" Icon="@Icons.Material.Filled.Home" IconColor="Color.Surface">Главная</MudNavLink>
         </div>
-
            <AuthorizeView Roles="Client,Admin">
             <Authorized>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="appointment">
-                        <MudIcon Icon="@Icons.Material.Filled.CalendarToday"></MudIcon> Броньи
-                    </NavLink>
+                    <MudNavLink Href="/addappointment" Icon="@Icons.Material.Filled.CalendarToday" IconColor="Color.Surface">Запись к врачу</MudNavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <MudNavLink Href="/doctorCard" Icon="@Icons.Material.Filled.LocalPharmacy" IconColor="Color.Surface">Доктора</MudNavLink>
                 </div>
                </Authorized>
         </AuthorizeView>
         <AuthorizeView Roles="Admin">
             <Authorized>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="hospital">
-                        <MudIcon Icon="@Icons.Material.Filled.LocalHospital" />  Больницы
-                    </NavLink>
+                    <MudNavLink Href="/hospital" Icon="@Icons.Material.Filled.LocalHospital" IconColor="Color.Surface">Больницы</MudNavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="branch">
-                        <MudIcon Icon="@Icons.Material.Filled.Apartment" />  Филиалы
-                    </NavLink>
+                    <MudNavLink Href="/branch" Icon="@Icons.Material.Filled.Apartment" IconColor="Color.Surface">Филиалы</MudNavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="department">
-                        <MudIcon Icon="@Icons.Material.Filled.BusinessCenter" />  Отделения
-                    </NavLink>
+                    <MudNavLink Href="/department" Icon="@Icons.Material.Filled.BusinessCenter" IconColor="Color.Surface">Отделения</MudNavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="floor">
-                        <MudIcon Icon="@Icons.Material.Filled.Layers" /> Этажи
-                    </NavLink>
+                    <MudNavLink Href="/floor" Icon="@Icons.Material.Filled.Layers" IconColor="Color.Surface">Этажи</MudNavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="room">
-                        <MudIcon Icon="@Icons.Material.Filled.Room" /> Комнаты
-                    </NavLink>
+                    <MudNavLink Href="/room" Icon="@Icons.Material.Filled.Room" IconColor="Color.Surface">Комнаты</MudNavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="doctor">
-                        <MudIcon Icon="@Icons.Material.Filled.LocalPharmacy" /> Врачи
-                    </NavLink>
+                    <MudNavLink Href="/doctor" Icon="@Icons.Material.Filled.LocalPharmacy" IconColor="Color.Surface">Список врачей</MudNavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="worker">
-                        <MudIcon Icon="@Icons.Material.Filled.Person" /> Cотрудники
-                    </NavLink>
+                    <MudNavLink Href="/worker" Icon="@Icons.Material.Filled.Person" IconColor="Color.Surface">Cотрудники</MudNavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="patient">
-                        <MudIcon Icon="@Icons.Material.Filled.Group" /> Пациенты
-                    </NavLink>
+                    <MudNavLink Href="/patient" Icon="@Icons.Material.Filled.Person" IconColor="Color.Surface">Пациенты</MudNavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="role">
-                        <MudIcon Icon="@Icons.Material.Filled.Security" /> Роли
-                    </NavLink>
+                    <MudNavLink Href="/role" Icon="@Icons.Material.Filled.Security" IconColor="Color.Surface">Роли</MudNavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="position">
-                        <MudIcon Icon="@Icons.Material.Filled.Work" /> Должности
-                    </NavLink>
+                    <MudNavLink Href="/position" Icon="@Icons.Material.Filled.Work" IconColor="Color.Surface">Должности</MudNavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="pateintinfo">
-                        <MudIcon Icon="@Icons.Material.Filled.Group" /> Пациенты информатция
-                    </NavLink>
+                    <MudNavLink Href="/pateintinfo" Icon="@Icons.Material.Filled.Group" IconColor="Color.Surface">О Пациентах</MudNavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="hospitaldiagram">
-                        <MudIcon Icon="@Icons.Material.Filled.Schema" /> Hospital Diagram
-                    </NavLink>
+                    <MudNavLink Href="/appointment" Icon="@Icons.Material.Filled.CalendarToday" IconColor="Color.Surface">Список записей</MudNavLink>
+                </div> 
+                <div class="nav-item px-3">
+                    <MudNavLink Href="/hospitaldiagram" Icon="@Icons.Material.Filled.Schema" IconColor="Color.Surface">Дашбоард</MudNavLink>
                 </div>
         </Authorized>
         </AuthorizeView>
+        <div class="nav-item px-3">
+            <MudNavLink Href="/about" Icon="@Icons.Material.Filled.Info" IconColor="Color.Surface">О нас</MudNavLink>
+        </div>
     </nav>
 </div>
  

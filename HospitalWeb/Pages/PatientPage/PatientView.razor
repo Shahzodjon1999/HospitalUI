@@ -4,27 +4,30 @@
 <br />
 @if (patients != null)
 {
+    <div class="text-center">
+        <h4>Список Пациентов</h4>
+    </div>
     <MudDataGrid T="PatientResponse" Items="@patients" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
                  StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
                  Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
         <Columns>
             <TemplateColumn>
                 <HeaderTemplate>
-                    <MudText>Номер</MudText>
+                    <MudText Class="text-center">Номер</MudText>
                 </HeaderTemplate>
                 <CellTemplate Context="context">
                     <MudText>@((patients.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Property="x => x.FirstName" />
-            <PropertyColumn Property="x => x.LastName" />
-            <PropertyColumn Property="x => x.Address" />
-            <PropertyColumn Property="x => x.PhoneNumber" />
-            <PropertyColumn Property="x => x.Disease" />
-            <PropertyColumn Property="x => x.State" />
-            <PropertyColumn Property="x => x.DateOfBirth" />
-            <PropertyColumn Property="x => x.DateRegister" />
-            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
+            <PropertyColumn Property="x => x.FirstName" Title="Имя" Class="text-center" />
+            <PropertyColumn Property="x => x.LastName" Title="Фамилия" Class="text-center" />
+            <PropertyColumn Property="x => x.Address" Title="Адресс" Class="text-center" />
+            <PropertyColumn Property="x => x.PhoneNumber" Title="Номер телфон" Class="text-center" />
+            <PropertyColumn Property="x => x.Disease" Title="Вид болезни" Class="text-center" />
+            <PropertyColumn Property="x => x.State" Title="Состояние" Class="text-center" />
+            <PropertyColumn Property="x => x.DateOfBirth" Title="Дата рождения" Class="text-center" />
+            <PropertyColumn Property="x => x.DateRegister" Title="Дата регистратсия" Class="text-center" />
+            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end" Title="Редак. /Удалить" Class="text-center">
                 <CellTemplate>
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="() => ConfirmDelete(context.Item.Id)" />
