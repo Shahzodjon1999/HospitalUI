@@ -1,5 +1,8 @@
-﻿@page "/adddoctor1"
+﻿@page "/adddoctor"
+@using System.Net.Http.Headers
+@using Microsoft.AspNetCore.Components.Forms
 @using System.Text.Json
+@inject HttpClient Http
 
 @if (departmentList != null)
 {
@@ -37,7 +40,7 @@
                 </div>
                 <div class="mb-3">
                     <label>Выбрайте image</label>
-                    <InputFile OnChange="HandleFileChange" class="form-control" />
+                    <InputFile OnChange="HandleFileSelected" class="form-control" />
                 </div>
                 <div class="mb-3">
                     <label>Информация</label>
@@ -73,12 +76,11 @@
 }
 
 @code {
-    private string? authToken;
-    private DoctorRequest doctorRequest = new DoctorRequest();
     private IEnumerable<DepartmentResponse>? departmentList;
+    private string authToken;
+    private DoctorRequest doctorRequest = new DoctorRequest();
     private IBrowserFile? selectedFile;
-    private byte[]? selectedFileBytes;
-
+    private const long maxFileSize = 10242880; // 10 MB
     protected override async Task OnInitializedAsync()
     {
         try
@@ -95,51 +97,48 @@
             throw;
         }
     }
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+    }
 
     private async Task Create()
     {
-        try
+        var content = new MultipartFormDataContent();
+
+        content.Add(new StringContent(doctorRequest.FirstName), nameof(doctorRequest.FirstName));
+        content.Add(new StringContent(doctorRequest.LastName), nameof(doctorRequest.LastName));
+        content.Add(new StringContent(doctorRequest.PhoneNumber), nameof(doctorRequest.PhoneNumber));
+        content.Add(new StringContent(doctorRequest.Address), nameof(doctorRequest.Address));
+        content.Add(new StringContent(doctorRequest.Information), nameof(doctorRequest.Information));
+        content.Add(new StringContent(doctorRequest.Position), nameof(doctorRequest.Position));
+        content.Add(new StringContent(doctorRequest.DepartmentId.ToString()), nameof(doctorRequest.DepartmentId));
+        content.Add(new StringContent(doctorRequest.DateOfBirth?.ToString("yyyy-MM-ddTHH:mm:ss.fffZ") ?? string.Empty), nameof(doctorRequest.DateOfBirth));
+        content.Add(new StringContent(doctorRequest.DateRegister?.ToString("yyyy-MM-ddTHH:mm:ss.fffZ") ?? string.Empty), nameof(doctorRequest.DateRegister));
+
+        if (selectedFile != null)
         {
-            if (selectedFileBytes != null)
+            var fileContent = new StreamContent(selectedFile.OpenReadStream(maxFileSize));
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(selectedFile.ContentType);
+            content.Add(fileContent, nameof(doctorRequest.Image), selectedFile.Name);
+        }
+        authToken = await _authenticationStateProvider.GetToken();
+        if (authToken != null)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+            var response = await _httpClient.PostAsync("api/Doctor", content);
+            response.EnsureSuccessStatusCode();
+            if (response.IsSuccessStatusCode)
             {
-               // doctorRequest.Image = selectedFileBytes;
-
-                var jsonRequest = JsonSerializer.Serialize(doctorRequest);
-                var content = new StringContent(jsonRequest, System.Text.Encoding.UTF8, "application/json");
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                var response = await _httpClient.PostAsync("api/Doctor/Create", content);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
-                    doctorRequest = new DoctorRequest();
-                }
-                else
-                {
-                    await _js.InvokeVoidAsync("alert", "Ошибка");
-                }
+                await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+                doctorRequest = new DoctorRequest();
             }
             else
             {
-                await _js.InvokeVoidAsync("alert", "Please select an image file.");
+                await _js.InvokeVoidAsync("alert", "Ошибка");
             }
         }
-        catch (Exception ex)
-        {
-            throw new Exception($"An error occurred: {ex.Message}");
-        }
     }
-
-    private async void HandleFileChange(InputFileChangeEventArgs e)
-    {
-        selectedFile = e.File;
-        using (var memoryStream = new MemoryStream())
-        {
-            await selectedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(memoryStream);
-            selectedFileBytes = memoryStream.ToArray();
-        }
-    }
-
     private void Back()
     {
         _navigationManager.NavigateTo("/doctor");

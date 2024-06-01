@@ -16,7 +16,8 @@ public record DoctorUpdateRequest : EntityBaseUpdateRequest
 
     public DateTime DateRegister { get; set; }
 
-    public string Positions { get; set; } = string.Empty;
+    public string Position { get; set; } = string.Empty;
+    public string? Image { get; set; }
 
     public Guid DepartmentId { get; set; }
 }

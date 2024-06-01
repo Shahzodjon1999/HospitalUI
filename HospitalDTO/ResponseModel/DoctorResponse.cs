@@ -16,7 +16,7 @@ public record DoctorResponse : EntityBaseResponse
 
     public DateTime DateRegister { get; set; }
 
-    public string Positions { get; set; } = string.Empty;
-    public byte[]? Image { get; set; }
+    public string Position { get; set; } = string.Empty;
+    public string? Image { get; set; }
     public string Information { get; set; } = string.Empty;
 }

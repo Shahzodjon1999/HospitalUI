@@ -1,10 +1,11 @@
 ﻿@page "/doctor"
+<PageTitle>Doctors List</PageTitle>
 <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить</MudButton>
 <br />
 <br />
 @if (doctors != null)
 {
-     <div class="text-center">
+    <div class="text-center">
         <h4>Список докторов</h4>
     </div>
     <MudDataGrid T="DoctorResponse" Items="@doctors" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
@@ -23,9 +24,27 @@
             <PropertyColumn Property="x => x.LastName" Title="Фамилия" Class="text-center" />
             <PropertyColumn Property="x => x.Address" Title="Адресс" Class="text-center" />
             <PropertyColumn Property="x => x.PhoneNumber" Title="Номер тел" Class="text-center" />
-            <PropertyColumn Property="x => x.Positions" Title="Позиция" Class="text-center" />
+            <PropertyColumn Property="x => x.Position" Title="Позиция" Class="text-center" />
             <PropertyColumn Property="x => x.DateOfBirth" Title="Дата рождения" Class="text-center" />
             <PropertyColumn Property="x => x.DateRegister" Title="Дата регистрации" Class="text-center" />
+
+            <!-- Image Column -->
+            <TemplateColumn>
+                <HeaderTemplate>
+                    <MudText Class="text-center">Изображение</MudText>
+                </HeaderTemplate>
+                <CellTemplate Context="context">
+                    @if (!string.IsNullOrEmpty(context.Item.Image))
+                    {
+                        <MudImage Src="@context.Item.Image" Alt="Doctor Image" Width="100" Height="100" />
+                    }
+                    else
+                    {
+                        <MudText>No Image</MudText>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+
             <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end" Title="Редак. /Удалить" Class="text-center">
                 <CellTemplate>
                     <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
@@ -37,15 +56,14 @@
             <MudDataGridPager T="DoctorResponse" />
         </PagerContent>
     </MudDataGrid>
+
     <div class="d-flex flex-wrap mt-4">
         <MudSwitch @bind-Checked="@_readOnly" Color="Color.Primary">Read Only</MudSwitch>
     </div>
 }
-
 @code {
-    [Inject]
-    private CustomAuthenticationStateProvider authenticationStateProvider { get; set; }
-
+    private List<DoctorResponse> doctors;
+    private bool isLoading = true;
     private string authToken;
 
     private bool _readOnly;
@@ -53,24 +71,24 @@
     private List<string> _events = new();
     private bool _editTriggerRowClick;
 
-    private FloorRequest doctorRequest = new();
-
-    private IEnumerable<DoctorResponse> doctors;
-
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            authToken = await authenticationStateProvider.GetToken();
+            authToken = await _authenticationStateProvider.GetToken();
             if (authToken != null)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
                 doctors = await _httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Doctor");
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            // Handle exception (e.g., log or show an error message)
+        }
+        finally
+        {
+            isLoading = false;
         }
     }
     protected void Create()
@@ -117,12 +135,12 @@
         var updateRequest = new DoctorUpdateRequest
             {
                 Id = item.Id,
-                FirstName=item.FirstName,
-                LastName=item.LastName,
-                Address=item.Address,
-                DateOfBirth=item.DateOfBirth,
-                PhoneNumber=item.PhoneNumber,
-                Positions=item.Positions,
+                FirstName = item.FirstName,
+                LastName = item.LastName,
+                Address = item.Address,
+                DateOfBirth = item.DateOfBirth,
+                PhoneNumber = item.PhoneNumber,
+                Position = item.Position,
             };
 
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
@@ -130,3 +148,4 @@
         _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
     }
 }
+

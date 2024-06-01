@@ -1,251 +1,41 @@
-﻿@* @page "/doctorCard"
-@using MudBlazor
-@inject HttpClient _httpClient
-@inject CustomAuthenticationStateProvider authenticationStateProvider
-
-<MudContainer MaxWidth="MaxWidth.Large">
+﻿@page "/doctorCard"
+<MudGrid>
     @if (doctors != null)
     {
-        <MudGrid>
-            @foreach (var item in doctors)
-            {
-                <MudItem xs="12" sm="6" md="4">
-                    <MudCard Class="custom-card">
-                        <MudCardMedia>
-                            <MudImage Src="@GetImageSrc(item.Image)" Alt="Doctor Image" Class="card-img-top" />
-                        </MudCardMedia>
-                        <MudCardContent>
-                            <MudText Typo="Typo.h6">@item.FirstName @item.LastName</MudText>
-                            <MudText Typo="Typo.body2"><strong>Position:</strong> @item.Positions</MudText>
-                            <MudText Typo="Typo.body2"><strong>Phone Number:</strong> @item.PhoneNumber</MudText>
-                            <MudText Typo="Typo.body2">@item.Information</MudText>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-            }
-        </MudGrid>
-    }
-    else
-    {
-        <MudProgressCircular Indeterminate="true" />
-    }
-</MudContainer>
-
-@code {
-    private string authToken;
-    private IEnumerable<DoctorResponse> doctors;
-
-    protected override async Task OnInitializedAsync()
-    {
-        try
+        @foreach (var doctor in doctors)
         {
-            authToken = await authenticationStateProvider.GetToken();
-            if (authToken != null)
-            {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                doctors = await _httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Doctor");
-            }
-        }
-        catch (Exception ex)
-        {
-            // Handle exceptions appropriately (logging, user notifications, etc.)
-            Console.WriteLine(ex.Message);
-        }
-    }
-
-    private string GetImageSrc(byte[] image)
-    {
-        if (image != null && image.Length > 0)
-        {
-            return $"data:image/png;base64,{Convert.ToBase64String(image)}";
-        }
-        else
-        {
-            return "https://via.placeholder.com/150";
-        }
-    }
-
-    private class DoctorResponse
-    {
-        public Guid Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Address { get; set; }
-        public byte[]? Image { get; set; }
-        public string Information { get; set; }
-        public DateTime DateOfBirth { get; set; }
-        public DateTime DateRegister { get; set; }
-        public string Positions { get; set; }
-    }
-}
-
-
- *@
-@* 
-@page "/doctorCard"
-@if (doctors !=null)
-{
-    @foreach (var item in doctors)
-    {
-        <div class="card" style="width: 18rem;">
-            @if (item.Image != null && item.Image.Length > 0)
-            {
-                <img src="data:image/png;base64,@Convert.ToBase64String(item.Image)" class="card-img-top" alt="Doctor Image">
-            }
-            else
-            {
-                <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder Image">
-            }
-            <div class="card-body">
-                <h5 class="card-title">@item.FirstName @item.LastName</h5>
-                <p class="card-text"><strong>Position:</strong> @item.Positions</p>
-                <p class="card-text"><strong>Phone Number:</strong> @item.PhoneNumber</p>
-                <p class="card-text">@item.Information</p>
-            </div>
-        </div>
-    }
-}
-@code {
-    [Inject]
-    private CustomAuthenticationStateProvider authenticationStateProvider { get; set; }
-
-    private string authToken;
-
-    private IEnumerable<DoctorResponse> doctors;
-
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            authToken = await authenticationStateProvider.GetToken();
-            if (authToken != null)
-            {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                doctors = await _httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Doctor");
-            }
-        }
-        catch (Exception)
-        {
-            throw;
-        }
-    }
-} *@
-
-  @*   @page "/doctorCard"
-@inject HttpClient _httpClient
-@inject CustomAuthenticationStateProvider authenticationStateProvider
-
-@if (doctors != null)
-{
-    <div class="container">
-        <div class="row">
-            @foreach (var item in doctors)
-            {
-                <div class="col-md-4 mb-4">
-                    <div class="card" style="width: 100%;">
-                        @if (item.Image != null && item.Image.Length > 0)
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard>
+                    <div class="mud-card-media" style="background-image: url('@GetImageUrl(doctor.Image)'); height: 450px;"></div>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h5">@doctor.FirstName @doctor.LastName</MudText>
+                        <MudText Typo="Typo.body1">Телефон: @doctor.PhoneNumber</MudText>
+                        <MudText Typo="Typo.body1">Позиция: @doctor.Position</MudText>
+                        @if (IsInformationExpanded(doctor.Id))
                         {
-                            <img src="data:image/png;base64,@Convert.ToBase64String(item.Image)" class="card-img-top" alt="Doctor Image">
+                            <MudText Typo="Typo.body1">Информация: @doctor.Information</MudText>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="() => ToggleInformation(doctor.Id)">Show Less</MudButton>
                         }
                         else
                         {
-                            <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder Image">
+                            <MudText Typo="Typo.body1">Информация: @doctor.Information.Substring(0, Math.Min(50, doctor.Information.Length))...</MudText>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="() => ToggleInformation(doctor.Id)">Show More</MudButton>
                         }
-                        <div class="card-body">
-                            <h5 class="card-title">@item.FirstName @item.LastName</h5>
-                            <p class="card-text"><strong>Position:</strong> @item.Positions</p>
-                            <p class="card-text"><strong>Phone Number:</strong> @item.PhoneNumber</p>
-                            <p class="card-text">@item.Information</p>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    </div>
-}
-else
-{
-    <p>Loading...</p>
-}
-
-@code {
-    private string authToken;
-
-    private IEnumerable<DoctorResponse> doctors;
-
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            authToken = await authenticationStateProvider.GetToken();
-            if (authToken != null)
-            {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-                doctors = await _httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Doctor");
-            }
-        }
-        catch (Exception)
-        {
-            throw;
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
         }
     }
-} *@
-
-@page "/doctorCard"
-@if (doctors != null)
-{
-    <div class="container">
-        <div class="row">
-            @foreach (var item in doctors)
-            {
-                <div class="col-md-4 mb-4">
-                    <div class="card" style="width: 100%;">
-                        <div style="height: 400px; overflow: hidden;">
-                            <!-- Set a fixed height for the image container -->
-                            @if (item.Image != null && item.Image.Length > 0)
-                            {
-                                <img src="data:image/png;base64,@Convert.ToBase64String(item.Image)" class="card-img-top" alt="Doctor Image" style="width: 100%; height: auto;">
-                            }
-                            else
-                            {
-                                <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder Image" style="width: 100%; height: auto;">
-                            }
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">@item.FirstName @item.LastName</h5>
-                            <p class="card-text"><strong>Position:</strong> @item.Positions</p>
-                            <p class="card-text"><strong>Phone Number:</strong> @item.PhoneNumber</p>
-                            <p class="card-text">
-                                @{
-                                    var isExpanded = expandedInformation.ContainsKey(item.Id.ToString()) && expandedInformation[item.Id.ToString()];
-                                    if (isExpanded)
-                                    {
-                                        @item.Information
-                                    }
-                                    else
-                                    {
-                                        @ShortenedInfo(item.Information)
-                                    }
-                                }
-                                <button @onclick="() => ToggleInformation(item.Id.ToString())   " style="color: blue">@(isExpanded ? "Скрыть" : "Подробно")  </button>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    </div>
-}
-else
-{
-    <p>Loading...</p>
-}
+    else
+    {
+        <MudText>Loading...</MudText>
+    }
+</MudGrid>
 
 @code {
+    private List<DoctorResponse> doctors;
     private string authToken;
-    private IEnumerable<DoctorResponse> doctors;
-    private Dictionary<string, bool> expandedInformation = new Dictionary<string, bool>();
+    private Dictionary<Guid, bool> informationExpandedState = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -258,26 +48,39 @@ else
                 doctors = await _httpClient.GetFromJsonAsync<List<DoctorResponse>>("api/Doctor");
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Console.WriteLine(ex.Message);
         }
     }
 
-    private string ShortenedInfo(string info)
+    private string GetImageUrl(string imageFileName)
     {
-        const int maxChars = 100;
-        if (info.Length <= maxChars)
-            return info;
-        else
-            return $"{info.Substring(0, maxChars)}...";
+        if (string.IsNullOrEmpty(imageFileName))
+        {
+            return "default_image_url"; // Replace with a default image URL or an empty string
+        }
+        return imageFileName.Trim('\''); // Trim single quotes from the image URL if they exist
     }
 
-    private void ToggleInformation(string id)
+    private bool IsInformationExpanded(Guid doctorId)
     {
-        if (expandedInformation.ContainsKey(id))
-            expandedInformation[id] = !expandedInformation[id];
+        if (informationExpandedState.ContainsKey(doctorId))
+        {
+            return informationExpandedState[doctorId];
+        }
+        return false;
+    }
+
+    private void ToggleInformation(Guid doctorId)
+    {
+        if (informationExpandedState.ContainsKey(doctorId))
+        {
+            informationExpandedState[doctorId] = !informationExpandedState[doctorId];
+        }
         else
-            expandedInformation[id] = true;
+        {
+            informationExpandedState[doctorId] = true;
+        }
     }
 }
