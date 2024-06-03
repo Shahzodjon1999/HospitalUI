@@ -22,110 +22,57 @@
         </div>
     </div> *@
 
-   @*  <MudContainer>
-    <MudGrid>
-        <MudItem xs="12">
-            <MudText Typo="Typo.h3" Align="Align.Center">Welcome to Our Hospital</MudText>
-            <MudText Typo="Typo.subtitle1" Align="Align.Center">Committed to providing the best healthcare services to our community.</MudText>
-        </MudItem>
-        <MudItem xs="12" class="image-slider">
-            <MudCarousel T="string">
-                <MudCarouselItem>
-                    <img src="images/hospital/hospital1.jpg" alt="Hospital Image 1" class="carousel-image" />
-                </MudCarouselItem>
-                <MudCarouselItem>
-                    <img src="images/hospital/hospital2.jpg" alt="Hospital Image 2" class="carousel-image" />
-                </MudCarouselItem>
-                <MudCarouselItem>
-                    <img src="images/hospital/hospital3.jpg" alt="Hospital Image 3" class="carousel-image" />
-                </MudCarouselItem>
-                <MudCarouselItem>
-                    <img src="images/hospital/hospital4.jpg" alt="Hospital Image 4" class="carousel-image" />
-                </MudCarouselItem>
-            </MudCarousel>
-        </MudItem>
-        <MudItem xs="12" class="services">
-            <MudText Typo="Typo.h4" Align="Align.Center">Our Services</MudText>
-            <MudGrid>
-                <MudItem xs="12" sm="6" md="4">
-                    <MudPaper Elevation="2" Class="pa-4">
-                        <MudIcon Icon="@Icons.Material.Filled.LocalHospital" Size="Size.Large" />
-                        <MudText Typo="Typo.subtitle1">Emergency Care</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="6" md="4">
-                    <MudPaper Elevation="2" Class="pa-4">
-                        <MudIcon Icon="@Icons.Material.Filled.MedicalServices" Size="Size.Large" />
-                        <MudText Typo="Typo.subtitle1">Outpatient Services</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="6" md="4">
-                    <MudPaper Elevation="2" Class="pa-4">
-                        <MudIcon Icon="@Icons.Material.Filled.LocalPharmacy" Size="Size.Large" />
-                        <MudText Typo="Typo.subtitle1">Pharmacy</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="6" md="4">
-                    <MudPaper Elevation="2" Class="pa-4">
-                        <MudIcon Icon="@Icons.Material.Filled.Spa" Size="Size.Large" />
-                        <MudText Typo="Typo.subtitle1">Rehabilitation</MudText>
-                    </MudPaper>
-                </MudItem>
-            </MudGrid>
-        </MudItem>
-    </MudGrid>
-</MudContainer> *@
 <MudContainer>
     <MudGrid>
         <MudItem xs="12" class="image-slider">
-            <MudCarousel Class="mud-width-full" Style="height:100vh;" TData="string" AutoCycle="true">
+            <MudCarousel Class="mud-width-full" Style="height:60vh;" TData="string" AutoCycle="true">
                 <MudCarouselItem Transition="Transition.Slide">
-                    <div class="d-flex" style="height:100%">
-                        <img src="images/hospital4.jpg" alt="Hospital Image 1" class="carousel-image" />
+                    <div class="d-flex" style="height:200%">
+                        <img src="images/hospital5.jpg" alt="Hospital Image 1" class="carousel-image" />
                     </div>
                 </MudCarouselItem>
                 <MudCarouselItem Transition="Transition.Fade">
-                    <div class="d-flex" style="height:100%">
-                        <img src="images/hospital4.jpg" alt="Hospital Image 2" class="carousel-image" />
+                    <div class="d-flex" style="height:200%">
+                        <img src="images/hospital6.jpg" alt="Hospital Image 2" class="carousel-image" />
                     </div>
                 </MudCarouselItem>
                 <MudCarouselItem Transition="Transition.Custom" CustomTransitionEnter="bounceIn" CustomTransitionExit="bounceOut">
-                    <div class="d-flex" style="height:100%">
-                        <img src="images/hospital4.jpg" alt="Hospital Image 3" class="carousel-image" />
+                    <div class="d-flex" style="height:200%">
+                        <img src="images/hospital7.jpg" alt="Hospital Image 3" class="carousel-image" />
                     </div>
                 </MudCarouselItem>
                 <MudCarouselItem Transition="Transition.Custom" CustomTransitionEnter="backInDown" CustomTransitionExit="backOutDown">
-                    <div class="d-flex" style="height:100%">
-                        <img src="images/hospital4.jpg" alt="Hospital Image 4" class="carousel-image" />
+                    <div class="d-flex" style="height:200%">
+                        <img src="images/hospital8.jpg" alt="Hospital Image 4" class="carousel-image" />
                     </div>
                 </MudCarouselItem>
             </MudCarousel>
         </MudItem>
         <MudItem xs="12" class="services">
-            <MudText Typo="Typo.h4" Align="Align.Center">Our Services</MudText>
+                <MudText Typo="Typo.h4" Align="Align.Center">Наши услуги</MudText>
             <MudGrid>
                 <MudItem xs="12" sm="6" md="4">
                     <MudPaper Elevation="2" Class="pa-4">
                         <MudIcon Icon="@Icons.Material.Filled.LocalHospital" Size="Size.Large" />
-                        <MudText Typo="Typo.subtitle1">Emergency Care</MudText>
+                            <MudText Typo="Typo.subtitle1">Неотложная помощь</MudText>
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" sm="6" md="4">
                     <MudPaper Elevation="2" Class="pa-4">
                         <MudIcon Icon="@Icons.Material.Filled.MedicalServices" Size="Size.Large" />
-                        <MudText Typo="Typo.subtitle1">Outpatient Services</MudText>
+                            <MudText Typo="Typo.subtitle1">Амбулаторные услуги</MudText>
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" sm="6" md="4">
                     <MudPaper Elevation="2" Class="pa-4">
                         <MudIcon Icon="@Icons.Material.Filled.LocalPharmacy" Size="Size.Large" />
-                        <MudText Typo="Typo.subtitle1">Pharmacy</MudText>
+                            <MudText Typo="Typo.subtitle1">Аптека</MudText>
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" sm="6" md="4">
                     <MudPaper Elevation="2" Class="pa-4">
                         <MudIcon Icon="@Icons.Material.Filled.Spa" Size="Size.Large" />
-                        <MudText Typo="Typo.subtitle1">Rehabilitation</MudText>
+                            <MudText Typo="Typo.subtitle1">Реабилитация</MudText>
                     </MudPaper>
                 </MudItem>
             </MudGrid>
