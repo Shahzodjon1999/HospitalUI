@@ -1,0 +1,56 @@
+﻿@page "/queue"
+<MudContainer>
+    <MudPaper Class="pa-4">
+        <MudText Typo="Typo.h3">Текущая очередь</MudText>
+        
+        @if (queueEntries != null)
+        {
+            <MudList>
+                @foreach (var entry in queueEntries)
+                {
+                    <MudListItem>
+                        <MudListItemContent>
+                            <MudText>Пациент: @entry.PatientName</MudText>
+                            <MudText>Врач: @entry.DoctorName</MudText>
+                            <MudText>Время встречи: @entry.AppointmentDate</MudText>
+                        </MudListItemContent>
+                    </MudListItem>
+                }
+            </MudList>
+        }
+        else
+        {
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+        }
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="DequeueAllAppointments">Отмены очереди</MudButton>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private List<QueueEntryResponse> queueEntries;
+
+    protected override async Task OnInitializedAsync()
+    {
+        queueEntries = await _httpClient.GetFromJsonAsync<List<QueueEntryResponse>>("api/queue");
+    }
+
+    private async Task DequeueAllAppointments()
+    {
+        while (queueEntries != null && queueEntries.Count > 0)
+        {
+            var response = await _httpClient.PostAsync("api/queue/dequeue", null);
+            if (response.IsSuccessStatusCode)
+            {
+                var dequeuedEntry = await response.Content.ReadFromJsonAsync<QueueEntryResponse>();
+                queueEntries.Remove(dequeuedEntry);
+                StateHasChanged();
+            }
+            else
+            {
+                // Handle the error response (optional)
+                break;
+            }
+        }
+    }
+}

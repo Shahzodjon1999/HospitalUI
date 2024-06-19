@@ -41,14 +41,14 @@
 }
 
 @code {
-    private string authToken;
+    private string? authToken;
     private bool _readOnly;
     private bool _isCellEditMode;
     private bool _editTriggerRowClick;
 
     private AppointmentRequest appointmentRequest = new();
 
-    private IEnumerable<AppointmentResponse> appointments;
+    private IEnumerable<AppointmentResponse>? appointments;
 
     private List<string> _events = new();
 

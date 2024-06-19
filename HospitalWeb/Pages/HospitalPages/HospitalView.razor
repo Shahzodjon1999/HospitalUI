@@ -1,4 +1,178 @@
 ﻿@page "/hospital"
+@using BlazorDownloadFile
+@inject IBlazorDownloadFileService BlazorDownloadFileService
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить</MudButton>
+<MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4 ml-2" OnClick="ExportToExcel">Экспорт в Excel</MudButton>
+<br />
+<br />
+@if (Hospitals != null)
+{
+    <div class="text-center">
+        <h4>Список больниц</h4>
+    </div>
+    <MudDataGrid T="HospitalResponse" Items="@Hospitals" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+                 StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
+                 Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
+        <Columns>
+            <TemplateColumn>
+                <HeaderTemplate>
+                    <MudText Class="text-center">Номер</MudText>
+                </HeaderTemplate>
+                <CellTemplate Context="context">
+                    <MudText>@((Hospitals.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.Name" Title="Название" Class="text-center" />
+            <PropertyColumn Property="x => x.Location" Title="Адресс" Class="text-center" />
+            <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end" Title="Редак. /Удалить" Class="text-center">
+                <CellTemplate>
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="() => ConfirmDelete(context.Item.Id)" />
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="HospitalResponse" />
+        </PagerContent>
+    </MudDataGrid>
+    <div class="d-flex flex-wrap mt-4">
+        <MudSwitch @bind-Checked="@_readOnly" Color="Color.Primary">Read Only</MudSwitch>
+    </div>
+}
+@code {
+    [Inject]
+    private CustomAuthenticationStateProvider authenticationStateProvider { get; set; }
+
+    private string authToken;
+    private bool _readOnly;
+    private bool _isCellEditMode;
+    private List<string> _events = new();
+    private bool _editTriggerRowClick;
+
+    private HospitalRequest hospitalRequest = new();
+
+    private IEnumerable<HospitalResponse> Hospitals;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                Hospitals = await _httpClient.GetFromJsonAsync<List<HospitalResponse>>("api/Hospital");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    protected async Task Create()
+    {
+        _navigationManager.NavigateTo("/addhospital");
+    }
+
+    private async Task ConfirmDelete(Guid id)
+    {
+        var parameters = new DialogParameters
+            {
+                ["Message"] = "Вы уверены, что хотите удалить"
+            };
+
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        var dialog = DialogService.Show<ConfirmDialog>("Подтверждение", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            await Delete(id);
+        }
+    }
+
+    protected async Task Delete(Guid id)
+    {
+        try
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+            await _httpClient.DeleteAsync($"api/Hospital?id={id}");
+            Hospitals = await _httpClient.GetFromJsonAsync<List<HospitalResponse>>("api/Hospital");
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    // events
+    void StartedEditingItem(HospitalResponse item)
+    {
+        _events.Insert(0, $"Event = StartedEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    void CanceledEditingItem(HospitalResponse item)
+    {
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    private async void CommittedItemChanges(HospitalResponse item)
+    {
+        var updateRequest = new HospitalUpdateRequest
+            {
+                Id = item.Id,
+                Location = item.Location,
+                Name = item.Name
+            };
+        try
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+            await _httpClient.PutAsJsonAsync<HospitalUpdateRequest>("api/Hospital", updateRequest);
+            _events.Insert(0, $"Event = CommittedItemChanges, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    private async Task ExportToExcel()
+    {
+        using var workbook = new ClosedXML.Excel.XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Hospitals");
+        worksheet.Cell(1, 1).Value = "Номер";
+        worksheet.Cell(1, 2).Value = "Название";
+        worksheet.Cell(1, 3).Value = "Адресс";
+
+        for (int i = 0; i < Hospitals.Count(); i++)
+        {
+            var hospital = Hospitals.ElementAt(i);
+            worksheet.Cell(i + 2, 1).Value = i + 1;
+            worksheet.Cell(i + 2, 2).Value = hospital.Name;
+            worksheet.Cell(i + 2, 3).Value = hospital.Location;
+        }
+
+        using var ms = new MemoryStream();
+        workbook.SaveAs(ms);
+        ms.Seek(0, SeekOrigin.Begin);
+
+        await BlazorDownloadFileService.DownloadFile("Hospitals.xlsx", ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+@* @page "/hospital"
 <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить</MudButton>
 <br />
 <br />
@@ -132,4 +306,4 @@
             throw;
         }
     }
-}
+} *@

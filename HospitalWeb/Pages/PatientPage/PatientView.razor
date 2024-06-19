@@ -1,5 +1,8 @@
 ﻿@page "/patient"
+@using BlazorDownloadFile
+@inject IBlazorDownloadFileService BlazorDownloadFileService
 <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить</MudButton>
+<MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4 ml-2" OnClick="ExportToExcel">Экспорт в Excel</MudButton>
 <br />
 <br />
 @if (patients != null)
@@ -7,6 +10,183 @@
     <div class="text-center">
         <h4>Список Пациентов</h4>
     </div>
+    <div class="mud-table-container">
+        <MudDataGrid T="PatientResponse" Items="@patients" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+                     StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
+                     Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
+            <Columns>
+                <TemplateColumn Class="column-small">
+                    <HeaderTemplate>
+                        <MudText Class="text-center">Номер</MudText>
+                    </HeaderTemplate>
+                    <CellTemplate Context="context">
+                        <MudText>@((patients.ToList().IndexOf(context.Item) + 1).ToString())</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn Property="x => x.FirstName" Title="Имя" Class="text-center column-medium" />
+                <PropertyColumn Property="x => x.LastName" Title="Фамилия" Class="text-center column-medium" />
+                <PropertyColumn Property="x => x.Address" Title="Адресс" Class="text-center column-large" />
+                <PropertyColumn Property="x => x.PhoneNumber" Title="Номер телфон" Class="text-center column-medium" />
+                <PropertyColumn Property="x => x.Disease" Title="Вид болезни" Class="text-center column-large" />
+                <PropertyColumn Property="x => x.State" Title="Состояние" Class="text-center column-medium" />
+                <PropertyColumn Property="x => x.DateOfBirth" Title="Дата рождения" Class="text-center column-medium" />
+                <PropertyColumn Property="x => x.DateRegister" Title="Дата регистратсия" Class="text-center column-medium" />
+                <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end" Title="Редак. /Удалить" Class="text-center column-medium">
+                    <CellTemplate>
+                        <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                        <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="() => ConfirmDelete(context.Item.Id)" />
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="PatientResponse" />
+            </PagerContent>
+        </MudDataGrid>
+    </div>
+    <div class="d-flex flex-wrap mt-4">
+        <MudSwitch @bind-Checked="@_readOnly" Color="Color.Primary">Read Only</MudSwitch>
+    </div>
+}
+
+@code {
+    private string authToken;
+    private bool _readOnly;
+    private bool _isCellEditMode;
+    private List<string> _events = new();
+    private bool _editTriggerRowClick;
+
+    private PatientRequest floorRequest = new();
+
+    private IEnumerable<PatientResponse> patients;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await _authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                patients = await _httpClient.GetFromJsonAsync<List<PatientResponse>>("api/Patient");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    protected void Create()
+    {
+        _navigationManager.NavigateTo("/addpatient");
+    }
+
+    private async Task ConfirmDelete(Guid id)
+    {
+        var parameters = new DialogParameters
+            {
+                ["Message"] = "Вы уверены, что хотите удалить"
+            };
+
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        var dialog = DialogService.Show<ConfirmDialog>("Подтверждение", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            await Delete(id);
+        }
+    }
+    protected async Task Delete(Guid id)
+    {
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        await _httpClient.DeleteAsync($"api/Patient?id={id}");
+        patients = await _httpClient.GetFromJsonAsync<List<PatientResponse>>("api/Patient");
+    }
+
+    // events
+    void StartedEditingItem(PatientResponse item)
+    {
+        _events.Insert(0, $"Event = StartedEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    void CanceledEditingItem(PatientResponse item)
+    {
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+    void CommittedItemChanges(PatientResponse item)
+    {
+        var updateRequest = new PatientUpdateRequest
+            {
+                Id = item.Id,
+                FirstName = item.FirstName,
+                LastName = item.LastName,
+                Address = item.Address,
+                DateOfBirth = item.DateOfBirth,
+                PhoneNumber = item.PhoneNumber,
+                Disease = item.Disease,
+                //RoomId=item.RoomNumber,
+                State = item.State
+            };
+
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+        _httpClient.PutAsJsonAsync<PatientUpdateRequest>("api/Patient", updateRequest);
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    private async Task ExportToExcel()
+    {
+        using var workbook = new ClosedXML.Excel.XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Hospitals");
+        worksheet.Cell(1, 1).Value = "Номер";
+        worksheet.Cell(1, 2).Value = "Имя";
+        worksheet.Cell(1, 3).Value = "Фамилия";
+        worksheet.Cell(1, 4).Value = "Адресс";
+        worksheet.Cell(1, 5).Value = "Номер телфон";
+        worksheet.Cell(1, 6).Value = "Вид болезни";
+        worksheet.Cell(1, 7).Value = "Состояние";
+        worksheet.Cell(1, 8).Value = "Дата рождения";
+        worksheet.Cell(1, 9).Value = "Дата регистратсия";
+
+        for (int i = 0; i < patients.Count(); i++)
+        {
+            var hospital = patients.ElementAt(i);
+            worksheet.Cell(i + 2, 1).Value = i + 1;
+            worksheet.Cell(i + 2, 2).Value = hospital.FirstName;
+            worksheet.Cell(i + 2, 3).Value = hospital.LastName;
+            worksheet.Cell(i + 2, 4).Value = hospital.Address;
+            worksheet.Cell(i + 2, 5).Value = hospital.PhoneNumber;
+            worksheet.Cell(i + 2, 6).Value = hospital.Disease;
+            worksheet.Cell(i + 2, 7).Value = hospital.State.ToString();
+            worksheet.Cell(i + 2, 8).Value = hospital.DateOfBirth;
+            worksheet.Cell(i + 2, 9).Value = hospital.DateRegister;
+        }
+
+        using var ms = new MemoryStream();
+        workbook.SaveAs(ms);
+        ms.Seek(0, SeekOrigin.Begin);
+
+        await BlazorDownloadFileService.DownloadFile("Patient.xlsx", ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    }
+}
+
+
+
+
+
+@* @page "/patient"
+@using BlazorDownloadFile
+@inject IBlazorDownloadFileService BlazorDownloadFileService
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="Create">Добавить</MudButton>
+<MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4 ml-2" OnClick="ExportToExcel">Экспорт в Excel</MudButton>
+<br />
+<br />
+@if (patients != null)
+{
+    <div class="text-center">
+        <h4>Список Пациентов</h4>
+    </div>
+
     <MudDataGrid T="PatientResponse" Items="@patients" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
                  StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
                  Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
@@ -128,4 +308,39 @@
         _httpClient.PutAsJsonAsync<PatientUpdateRequest>("api/Patient", updateRequest);
         _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
     }
-}
+
+    private async Task ExportToExcel()
+    {
+        using var workbook = new ClosedXML.Excel.XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Hospitals");
+        worksheet.Cell(1, 1).Value = "Номер";
+        worksheet.Cell(1, 2).Value = "Имя";
+        worksheet.Cell(1, 3).Value = "Фамилия";
+        worksheet.Cell(1, 4).Value = "Адресс";
+        worksheet.Cell(1, 5).Value = "Номер телфон";
+        worksheet.Cell(1, 6).Value = "Вид болезни";
+        worksheet.Cell(1, 7).Value = "Состояние";
+        worksheet.Cell(1, 8).Value = "Дата рождения";
+        worksheet.Cell(1, 9).Value = "Дата регистратсия";
+
+        for (int i = 0; i < patients.Count(); i++)
+        {
+            var hospital = patients.ElementAt(i);
+            worksheet.Cell(i + 2, 1).Value = i + 1;
+            worksheet.Cell(i + 2, 2).Value = hospital.FirstName;
+            worksheet.Cell(i + 2, 3).Value = hospital.LastName;
+            worksheet.Cell(i + 2, 4).Value = hospital.Address;
+            worksheet.Cell(i + 2, 5).Value = hospital.PhoneNumber;
+            worksheet.Cell(i + 2, 6).Value = hospital.Disease;
+            worksheet.Cell(i + 2, 7).Value = hospital.State.ToString();
+            worksheet.Cell(i + 2, 8).Value = hospital.DateOfBirth;
+            worksheet.Cell(i + 2, 9).Value = hospital.DateRegister;
+        }
+
+        using var ms = new MemoryStream();
+        workbook.SaveAs(ms);
+        ms.Seek(0, SeekOrigin.Begin);
+
+        await BlazorDownloadFileService.DownloadFile("Patient.xlsx", ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    }
+} *@

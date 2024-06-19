@@ -24,15 +24,21 @@
            <AuthorizeView Roles="Client,Admin">
             <Authorized>
                 <div class="nav-item px-3">
-                    <MudNavLink Href="/addappointment" Icon="@Icons.Material.Filled.CalendarToday" IconColor="Color.Surface">Запись к врачу</MudNavLink>
+                    <MudNavLink Href="/appointmentregister" Icon="@Icons.Material.Filled.CalendarToday" IconColor="Color.Surface">Запись к врачу</MudNavLink>
                 </div>
                 <div class="nav-item px-3">
                     <MudNavLink Href="/doctorCard" Icon="@Icons.Material.Filled.LocalPharmacy" IconColor="Color.Surface">Доктора</MudNavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <MudNavLink Href="/queue" Icon="@Icons.Material.Filled.Queue" IconColor="Color.Surface">Очередь</MudNavLink>
                 </div>
                </Authorized>
         </AuthorizeView>
         <AuthorizeView Roles="Admin">
             <Authorized>
+                <div class="nav-item px-3">
+                    <MudNavLink Href="/manage-queue" Icon="@Icons.Material.Filled.ManageAccounts" IconColor="Color.Surface">Управ.очередью</MudNavLink>
+                </div>
                 <div class="nav-item px-3">
                     <MudNavLink Href="/hospital" Icon="@Icons.Material.Filled.LocalHospital" IconColor="Color.Surface">Больницы</MudNavLink>
                 </div>
@@ -69,9 +75,6 @@
                 <div class="nav-item px-3">
                     <MudNavLink Href="/appointment" Icon="@Icons.Material.Filled.CalendarToday" IconColor="Color.Surface">Список записей</MudNavLink>
                 </div> 
-                <div class="nav-item px-3">
-                    <MudNavLink Href="/hospitaldiagram" Icon="@Icons.Material.Filled.Schema" IconColor="Color.Surface">Дашбоард</MudNavLink>
-                </div>
         </Authorized>
         </AuthorizeView>
         <div class="nav-item px-3">

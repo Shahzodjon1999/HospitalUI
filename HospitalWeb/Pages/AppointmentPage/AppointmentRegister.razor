@@ -1,6 +1,6 @@
-﻿@page "/addappointment"
+﻿@page "/appointmentregister"
 @using Microsoft.AspNetCore.Components.Forms
-@if(doctorList!=null)
+@if (doctorList != null)
 {
     <div class="row">
         <div class="col-lg-4 offset-lg-4 pt-4 border">
@@ -45,16 +45,12 @@
                 </div>
                 <div class="mb-3 d-grid gap-2">
                     <button type="submit" class="btn btn-outline-success">Сохранить</button>
-                    <button type="button" @onclick="Back" class="btn btn-primary">Назад</button>
                 </div>
             </EditForm>
         </div>
     </div>
 }
 @code {
-    [Inject]
-    private CustomAuthenticationStateProvider? authenticationStateProvider { get; set; }
-
     private string? authToken;
     private AppointmentRequest appointmentRequest = new AppointmentRequest();
 
@@ -63,7 +59,7 @@
     {
         try
         {
-            authToken = await authenticationStateProvider.GetToken();
+            authToken = await _authenticationStateProvider.GetToken();
             if (authToken != null)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
@@ -79,13 +75,13 @@
     {
         try
         {
-            authToken = await authenticationStateProvider.GetToken();
+            authToken = await _authenticationStateProvider.GetToken();
             if (authToken != null)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
 
-                // Check if the appointment already exists
-                var checkResponse = await _httpClient.GetAsync($"api/Appointment/check-appointment?doctorId={appointmentRequest.DoctorId}&appointmentDate={appointmentRequest.AppointmentDate}");
+                // Check if the appointment already existsdoctorRequest.DateRegister?.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+                var checkResponse = await _httpClient.GetAsync($"api/Appointment/check-appointment?doctorId={appointmentRequest.DoctorId}&appointmentDate={appointmentRequest.AppointmentDate?.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")}");
                 var appointmentExists = await checkResponse.Content.ReadFromJsonAsync<bool>();
 
                 if (appointmentExists)
@@ -106,16 +102,11 @@
                         await _js.InvokeVoidAsync("alert", "Ошибка при сохранении данных.");
                     }
                 }
-
             }
         }
         catch (Exception)
         {
             throw;
         }
-    }
-    private void Back()
-    {
-        _navigationManager.NavigateTo("/appointment");
     }
 }

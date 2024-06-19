@@ -1,7 +1,9 @@
+using BlazorDownloadFile;
 using Blazored.SessionStorage;
 using Blazorise;
 using HospitalWeb;
 using HospitalWeb.Authentication;
+using HospitalWeb.Extentions;
 using HospitalWeb.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -13,7 +15,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:8009/") });
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5224/") });
 
 builder.Services.AddAuthorizationCore();
 builder.Services.AddBlazoredSessionStorage();
@@ -29,5 +31,11 @@ builder.Services.AddSyncfusionBlazor();
 
 //added for MudBlazor
 builder.Services.AddMudServices();
+
+// Register BlazorDownloadFile service
+builder.Services.AddBlazorDownloadFile();
+
+//added TimerService for Background service
+builder.Services.AddSingleton<TimerService>();
 
 await builder.Build().RunAsync();

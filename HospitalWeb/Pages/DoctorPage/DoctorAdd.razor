@@ -11,7 +11,7 @@
             <EditForm Model="@doctorRequest" OnValidSubmit="Create" FormName="WorkerForm">
                 <DataAnnotationsValidator />
                 <div class="mb-3 text-center flex-column">
-                    <h3>Регистрация доктора</h3>
+                    <h3>Регистрация врача</h3>
                 </div>
                 <div class="mb-3">
                     <label>Имя</label>
@@ -81,6 +81,7 @@
     private DoctorRequest doctorRequest = new DoctorRequest();
     private IBrowserFile? selectedFile;
     private const long maxFileSize = 10242880; // 10 MB
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -97,6 +98,7 @@
             throw;
         }
     }
+
     private void HandleFileSelected(InputFileChangeEventArgs e)
     {
         selectedFile = e.File;
@@ -104,41 +106,52 @@
 
     private async Task Create()
     {
-        var content = new MultipartFormDataContent();
-
-        content.Add(new StringContent(doctorRequest.FirstName), nameof(doctorRequest.FirstName));
-        content.Add(new StringContent(doctorRequest.LastName), nameof(doctorRequest.LastName));
-        content.Add(new StringContent(doctorRequest.PhoneNumber), nameof(doctorRequest.PhoneNumber));
-        content.Add(new StringContent(doctorRequest.Address), nameof(doctorRequest.Address));
-        content.Add(new StringContent(doctorRequest.Information), nameof(doctorRequest.Information));
-        content.Add(new StringContent(doctorRequest.Position), nameof(doctorRequest.Position));
-        content.Add(new StringContent(doctorRequest.DepartmentId.ToString()), nameof(doctorRequest.DepartmentId));
-        content.Add(new StringContent(doctorRequest.DateOfBirth?.ToString("yyyy-MM-ddTHH:mm:ss.fffZ") ?? string.Empty), nameof(doctorRequest.DateOfBirth));
-        content.Add(new StringContent(doctorRequest.DateRegister?.ToString("yyyy-MM-ddTHH:mm:ss.fffZ") ?? string.Empty), nameof(doctorRequest.DateRegister));
-
-        if (selectedFile != null)
+        try
         {
-            var fileContent = new StreamContent(selectedFile.OpenReadStream(maxFileSize));
-            fileContent.Headers.ContentType = new MediaTypeHeaderValue(selectedFile.ContentType);
-            content.Add(fileContent, nameof(doctorRequest.Image), selectedFile.Name);
+            var content = new MultipartFormDataContent();
+
+            content.Add(new StringContent(doctorRequest.FirstName), nameof(doctorRequest.FirstName));
+            content.Add(new StringContent(doctorRequest.LastName), nameof(doctorRequest.LastName));
+            content.Add(new StringContent(doctorRequest.PhoneNumber), nameof(doctorRequest.PhoneNumber));
+            content.Add(new StringContent(doctorRequest.Address), nameof(doctorRequest.Address));
+            content.Add(new StringContent(doctorRequest.Information), nameof(doctorRequest.Information));
+            content.Add(new StringContent(doctorRequest.Position), nameof(doctorRequest.Position));
+            content.Add(new StringContent(doctorRequest.DepartmentId.ToString()), nameof(doctorRequest.DepartmentId));
+            content.Add(new StringContent(doctorRequest.DateOfBirth?.ToString("yyyy-MM-ddTHH:mm:ss.fffZ") ?? string.Empty), nameof(doctorRequest.DateOfBirth));
+            content.Add(new StringContent(doctorRequest.DateRegister?.ToString("yyyy-MM-ddTHH:mm:ss.fffZ") ?? string.Empty), nameof(doctorRequest.DateRegister));
+
+            if (selectedFile != null)
+            {
+                var fileContent = new StreamContent(selectedFile.OpenReadStream(maxFileSize));
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(selectedFile.ContentType);
+                content.Add(fileContent, nameof(doctorRequest.Image), selectedFile.Name);
+            }
+
+            authToken = await _authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                var response = await _httpClient.PostAsync("api/Doctor", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    await _js.InvokeVoidAsync("alert", "Successfully saved your data");
+                    doctorRequest = new DoctorRequest();
+                    selectedFile = null;
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    await _js.InvokeVoidAsync("alert", $"Error: {errorMessage}");
+                }
+            }
         }
-        authToken = await _authenticationStateProvider.GetToken();
-        if (authToken != null)
+        catch (Exception ex)
         {
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-            var response = await _httpClient.PostAsync("api/Doctor", content);
-            response.EnsureSuccessStatusCode();
-            if (response.IsSuccessStatusCode)
-            {
-                await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
-                doctorRequest = new DoctorRequest();
-            }
-            else
-            {
-                await _js.InvokeVoidAsync("alert", "Ошибка");
-            }
+            await _js.InvokeVoidAsync("alert", $"Exception: {ex.Message}");
         }
     }
+
     private void Back()
     {
         _navigationManager.NavigateTo("/doctor");

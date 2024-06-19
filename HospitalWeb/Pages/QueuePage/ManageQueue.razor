@@ -1,0 +1,65 @@
+﻿@page "/manage-queue"
+@if (appointments!=null)
+{
+    <MudContainer>
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h3">Управление очередью</MudText>
+            <div class="mb-3">
+                <label>Врач</label>
+                <select @bind="appointmentIdString" class="form-control">
+                    @foreach (var pos in appointments)
+                    {
+                        <option value="@pos.Id">@pos.Name @pos.Name</option>
+                    }
+                </select>
+            </div>@* 
+            <MudTextField @bind-Value="appointmentIdString" Label="Enter Appointment ID" Variant="Variant.Filled" Immediate="true" /> *@
+
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="EnqueueAppointment">Запись в очередь</MudButton>
+        </MudPaper>
+    </MudContainer>
+}
+else
+{
+    <h1>Loading...</h1>
+}
+
+
+@code {
+    private string appointmentIdString;
+    private string authToken;
+    private IEnumerable<AppointmentResponse> appointments;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            authToken = await _authenticationStateProvider.GetToken();
+            if (authToken != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                appointments = await _httpClient.GetFromJsonAsync<List<AppointmentResponse>>("api/Appointment");
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+    private async Task EnqueueAppointment()
+    {
+        if (Guid.TryParse(appointmentIdString, out Guid appointmentId))
+        {
+            var request = new QueueEntryRequest { AppointmentId = appointmentId };
+            var response = await _httpClient.PostAsJsonAsync("api/queue/enqueue", request);
+            if (response.IsSuccessStatusCode)
+            {
+                appointmentIdString = string.Empty;
+                await _js.InvokeVoidAsync("alert", "Seccessfull save your data");
+            }
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "You must be ID Appointment");
+        }
+    }
+}
